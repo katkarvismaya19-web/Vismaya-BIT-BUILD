@@ -3,70 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paisabuddy - Welcome</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>Paisabuddy - Home</title>
+<link rel="stylesheet" href="style.css">
 <style>
+/* ===== Animated Gradient Background ===== */
 body {
-  margin:0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(-45deg, #2b2b5d, #3a3a7d, #2b2b5d, #3a3a7d);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-  color:#fff;
-  overflow-x:hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(-45deg, #a1c4fd, #c2e9fb, #e0c3fc, #fbc2eb);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: #333;
 }
-@keyframes gradientBG {0% {background-position:0% 50%;} 50% {background-position:100% 50%;} 100% {background-position:0% 50%;}}
-.navbar {backdrop-filter: blur(12px); background: rgba(40,40,70,0.7); border-radius:15px; margin:15px; padding:10px 20px;}
-.navbar-brand, .nav-link {color:#00ffff !important; font-weight:600;}
-.nav-link:hover {color:#ffdd00 !important;}
-.btn-login, .btn-register {margin-left:10px; border-radius:20px; font-weight:bold;}
-.hero {text-align:center; padding:100px 20px 80px 20px;}
-.hero h1 {font-size:3.2rem; font-weight:900; text-shadow:2px 2px 10px #ffdd00;}
-.hero p {font-size:1.3rem; color:#00ffff; text-shadow:1px 1px 6px #000; margin-bottom:30px;}
-.btn-custom {background:linear-gradient(45deg,#ffdd00,#00ffff); color:#2b2b5d; font-weight:bold; border-radius:30px; padding:12px 30px; transition:transform 0.3s, box-shadow 0.3s;}
-.btn-custom:hover {transform:scale(1.1); box-shadow:0 10px 20px rgba(255,221,0,0.7),0 10px 20px rgba(0,255,255,0.7);}
-.about {max-width:900px; margin:0 auto; padding:40px 20px; text-align:center;}
-.about h2 {font-size:2.5rem; margin-bottom:20px; color:#ffdd00;}
-.about p {font-size:1.2rem; line-height:1.6; color:#ffffffcc;}
-.about img {max-width:100%; border-radius:15px; box-shadow:0 5px 25px rgba(0,0,0,0.5); margin-top:20px;}
-footer {text-align:center; padding:20px; color:#00ffff; backdrop-filter:blur(10px); background:rgba(40,40,70,0.7); border-radius:20px 20px 0 0;}
+
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+/* ===== Navbar ===== */
+nav {
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.25);
+    border-radius: 15px;
+    padding: 12px 20px;
+    margin: 15px;
+    display: inline-block;
+}
+
+nav a {
+    margin: 0 15px;
+    text-decoration: none;
+    color: #004aad;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #ff9900;
+    transform: scale(1.1);
+}
+
+/* ===== Hero Section ===== */
+.hero {
+    text-align: center;
+    margin-top: 50px;
+    padding: 80px 20px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    animation: fadeIn 1.5s ease;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #004aad;
+    margin-bottom: 15px;
+}
+
+.hero p {
+    font-size: 1.3rem;
+    color: #222;
+    margin-bottom: 30px;
+}
+
+.hero .btn {
+    margin: 10px;
+    background: linear-gradient(135deg, #0077ff, #00c6ff);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transition: 0.3s;
+}
+
+.hero .btn:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #005bb5, #00a1ff);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+    0% {opacity: 0; transform: translateY(-30px);}
+    100% {opacity: 1; transform: translateY(0);}
+}
+
+/* ===== Footer ===== */
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #004aad;
+    margin-top: 40px;
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.15);
+    border-radius: 20px 20px 0 0;
+}
 </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg">
-<div class="container-fluid">
-  <a class="navbar-brand" href="#">🌟 Paisabuddy</a>
-  <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
-      <li class="nav-item"><a class="nav-link" href="features.html">Features</a></li>
-      <li class="nav-item"><a class="btn btn-outline-light btn-login" href="login.html">Login</a></li>
-      <li class="nav-item"><a class="btn btn-outline-warning btn-register" href="register.html">Register</a></li>
-    </ul>
-  </div>
-</div>
+<!-- Navbar -->
+<nav>
+  <a href="index.html">Home</a> |
+  <a href="features.html">Features</a> |
+  <a href="Register.html">Register</a> |
+  <a href="login.html">Login</a>
 </nav>
 
+<!-- Hero Section -->
 <div class="hero">
-<h1>Welcome to Paisabuddy 🎉</h1>
-<p>Your smart companion for financial literacy, budgeting & fraud awareness.</p>
-<a href="features.html" class="btn btn-custom btn-lg">🚀 Explore Features</a>
+  <h1>Welcome to Paisabuddy 🎉</h1>
+  <p>Your smart companion for financial literacy, budgeting & fraud awareness.</p>
+  <a class="btn" href="features.html">🚀 Explore Features</a>
+  <a class="btn" href="Register.html">Get Started</a>
 </div>
 
-<div class="about">
-<h2>About Paisabuddy</h2>
-<p>Paisabuddy empowers young India to learn financial literacy interactively. Track budgets, manage virtual portfolios, play fraud challenges, and earn badges while learning!</p>
-<img src="https://images.unsplash.com/photo-1565372914446-799b74c8e91c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5NTExfDB8MXxzZWFyY2h8MXx8ZmluYW5jZXxlbnwwfHx8fDE2OTc1MTk0NzJ8&ixlib=rb-4.0.3&q=80&w=1080" alt="Finance illustration">
-</div>
-
+<!-- Footer -->
 <footer>
-<p>© 2025 Paisabuddy | Empowering Young India with Financial Literacy 💡</p>
+  © 2025 Paisabuddy | Empowering Young India with Financial Literacy 💡
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # app/crud.py
 import mysql.connector
-from app import schemas, security
+import schemas, security
 
 def create_user(db: mysql.connector.connection.MySQLConnection, user: schemas.UserCreate):
     """Inserts a new user record into the database."""

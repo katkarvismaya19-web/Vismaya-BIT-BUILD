@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paisabuddy - Register</title>
+  <link rel="stylesheet" href="Style.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f7e6e4 0%, #f0d9d6 50%, #ead3cf 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .register-wrapper {
+      width: 100%;
+      max-width: 450px;
+    }
+    
+    .register-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(206, 156, 148, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      position: relative;
+    }
+    
+    .btn-home {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(37, 99, 235, 0.1);
+      color: #2563eb;
+      text-decoration: none;
+      padding: 8px 15px;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-home:hover {
+      background: #2563eb;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    .register-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .register-header img {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+    }
+    
+    .register-header h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .register-header p {
+      color: #6b7280;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    
+    .input-group {
+      position: relative;
+      margin-bottom: 25px;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 20px 15px 12px;
+      border: 2px solid #e5e7eb;
+      border-radius: 15px;
+      background: #f9fafb;
+      color: #1f2937;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      outline: none;
+      margin-top: 8px;
+    }
+    
+    .input-group input:focus {
+      border-color: #2563eb;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+    
+    .input-group input:focus + label {
+      color: #2563eb;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .input-group label {
+      position: absolute;
+      left: 15px;
+      top: 4px;
+      transform: translateY(0) scale(0.85);
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 600;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      z-index: 1;
+      padding: 0 8px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+    }
+    
+    
+    .btn-register {
+      width: 100%;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 18px;
+      border-radius: 15px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+      margin: 20px 0;
+    }
+    
+    .btn-register:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(37, 99, 235, 0.4);
+    }
+    
+    .btn-register:active {
+      transform: translateY(0);
+    }
+    
+    .login-link {
+      display: block;
+      text-align: center;
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .login-link:hover {
+      color: #2563eb;
+      transform: translateY(-1px);
+    }
+    
+    /* Toast Notification Styles */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #2563eb;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 15px;
+      font-weight: 500;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+      transform: translateX(400px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    
+    .toast.error {
+      background: #dc2626;
+    }
+    
+    .toast.success {
+      background: #059669;
+    }
+    
+    .btn-register:disabled {
+      background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      .register-card {
+        padding: 30px 25px;
+        border-radius: 20px;
+      }
+      
+      .register-header h2 {
+        font-size: 1.5rem;
+      }
+      
+      .register-header img {
+        width: 50px;
+        height: 50px;
+      }
+      
+      .input-group {
+        margin-bottom: 20px;
+      }
+      
+      .input-group input {
+        padding: 18px 12px 10px;
+        margin-top: 6px;
+      }
+      
+      .input-group label {
+        font-size: 0.8rem;
+        top: 2px;
+      }
+      
+      .btn-register {
+        padding: 16px;
+      }
+      
+      .toast {
+        right: 10px;
+        left: 10px;
+        transform: translateY(-100px);
+      }
+      
+      .toast.show {
+        transform: translateY(0);
+      }
+    }
+  </style>
+<body>
+  <div class="register-wrapper">
+    <div class="register-card">
+      <a href="index.html" class="btn-home">🏠 Back to Home</a>
+      <div class="register-header">
+        <img src="https://cdn-icons-png.flaticon.com/512/744/744502.png" alt="Paisabuddy Logo">
+        <h2>Create Your Paisabuddy Account</h2>
+        <p>Join us today and take control of your finances 💰</p>
+      </div>
+      <form id="registerForm">
+        <div class="input-group">
+          <input type="text" name="name" id="name" placeholder=" " required>
+          <label for="name"><i class="fas fa-user"></i> Full Name</label>
+        </div>
+        <div class="input-group">
+          <input type="text" name="username" id="username" placeholder=" " required>
+          <label for="username"><i class="fas fa-at"></i> Username</label>
+        </div>
+        <div class="input-group">
+          <input type="email" name="email" id="email" placeholder=" " required>
+          <label for="email"><i class="fas fa-envelope"></i> Email</label>
+        </div>
+        <div class="input-group">
+          <input type="password" name="password" id="password" placeholder=" " required>
+          <label for="password"><i class="fas fa-lock"></i> Password</label>
+        </div>
+        <button type="submit" class="btn-register" id="registerBtn">
+          <i class="fas fa-rocket"></i> Create Account
+        </button>
+      </form>
+      
+      <!-- Toast notification for feedback -->
+      <div id="toast" class="toast"></div>
+      <a href="login.html" class="login-link">Already have an account? Login</a>
+    </div>
+  </div>
+  
+  <script>
+    // Toast notification function
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast ${type} show`;
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }
+    
+    // Handle registration form submission
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const registerBtn = document.getElementById('registerBtn');
+        const originalText = registerBtn.innerHTML;
+        
+        // Disable button and show loading state
+        registerBtn.disabled = true;
+        registerBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        
+        // Get form data
+        const formData = {
+            name: document.getElementById('name').value.trim(),
+            username: document.getElementById('username').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value
+        };
+        
+        // Basic validation
+        if (!formData.name || !formData.username || !formData.email || !formData.password) {
+            showToast('Please fill in all fields', 'error');
+            registerBtn.disabled = false;
+            registerBtn.innerHTML = originalText;
+            return;
+        }
+        
+        if (formData.password.length < 6) {
+            showToast('Password must be at least 6 characters long', 'error');
+            registerBtn.disabled = false;
+            registerBtn.innerHTML = originalText;
+            return;
+        }
+        
+        try {
+            // Send registration request to FastAPI backend
+            const response = await fetch('http://localhost:8000/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                // Registration successful
+                showToast(result.message || 'Registration successful!', 'success');
+                
+                // Redirect to portfolio page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'portfolio.html';
+                }, 1500);
+            } else {
+                // Registration failed
+                showToast(result.detail || 'Registration failed. Please try again.', 'error');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            showToast('Connection error. Make sure the server is running.', 'error');
+        } finally {
+            // Re-enable button
+            registerBtn.disabled = false;
+            registerBtn.innerHTML = originalText;
+        }
+    });
+    
+    // Add some nice input animations
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.parentElement.classList.remove('focused');
+            }
+        });
+        
+        // Check if input has value on page load
+        if (input.value) {
+            input.parentElement.classList.add('focused');
+        }
+    });
+  </script>
+</body>
+</html>

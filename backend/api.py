@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from mysql.connector.errors import IntegrityError
 
-from app import database, schemas, crud, security
+import database, schemas, crud, security
 
 # Create a new router object
 router = APIRouter()
