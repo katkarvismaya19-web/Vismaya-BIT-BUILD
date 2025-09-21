@@ -154,6 +154,8 @@ footer {
 <nav>
   <a href="index.html">Home</a> |
   <a href="features.html">Features</a> |
+  <a href="portfolio.html">Trading</a> |
+  <a href="dashboard.html">Dashboard</a> |
   <a href="Register.html">Register</a> |
   <a href="login.html">Login</a>
 </nav>
@@ -166,28 +168,35 @@ footer {
 <!-- Features Section -->
 <div class="features-section">
 
-    <div class="feature-card" onclick="window.location.href='virtual-portfolio.html'">
-        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170576.png" alt="Portfolio">
-        <h3>📈 Virtual Portfolio</h3>
-        <p>Practice risk-free investing with real-time data.</p>
-        <a class="btn" href="portfolio.html">Explore</a>
+    <div class="feature-card" onclick="navigateToPage('dashboard.html')" style="border: 3px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 99, 235, 0.1));">
+        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170576.png" alt="Dashboard">
+        <h3>🚀 Enhanced Trading Dashboard</h3>
+        <p>🤖 AI-powered insights with social features, achievements, and advanced analytics!</p>
+        <a class="btn" href="dashboard.html" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 1.1rem; padding: 12px 24px;">🌟 Try Dashboard</a>
     </div>
 
-    <div class="feature-card" onclick="window.location.href='gamified-learning.html'">
+    <div class="feature-card" onclick="navigateToPage('portfolio.html')">
+        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170576.png" alt="Trading">
+        <h3>📈 Virtual Trading</h3>
+        <p>Practice risk-free investing and trading with real-time data simulation.</p>
+        <a class="btn" href="portfolio.html">Start Trading</a>
+    </div>
+
+    <div class="feature-card" onclick="navigateToPage('gamified-learning.html')">
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Learning">
         <h3>🎓 Gamified Learning</h3>
         <p>Interactive quizzes, badges, and points to track progress.</p>
         <a class="btn" href="gamified-learning.html">Start Learning</a>
     </div>
 
-    <div class="feature-card" onclick="window.location.href='budget-tracker.html'">
+    <div class="feature-card" onclick="navigateToPage('budget-tracker.html')">
         <img src="https://cdn-icons-png.flaticon.com/512/3580/3580242.png" alt="Budget">
         <h3>💰 Budget Tracker</h3>
         <p>Track expenses, set goals, and save smarter with AI tips.</p>
         <a class="btn" href="budget-tracker.html">Track Budget</a>
     </div>
 
-    <div class="feature-card" onclick="window.location.href='fraud-challenges.html'">
+    <div class="feature-card" onclick="navigateToPage('fraud-challenges.html')">
         <img src="https://cdn-icons-png.flaticon.com/512/2913/2913465.png" alt="Fraud">
         <h3>🕵️ Fraud Challenges</h3>
         <p>Play challenges to learn how to spot scams & phishing attacks.</p>
@@ -199,6 +208,31 @@ footer {
 <footer>
     © 2025 Paisabuddy | Empowering Young India with Financial Literacy 💡
 </footer>
+
+<script>
+// Navigation function with error handling
+function navigateToPage(url) {
+    try {
+        console.log('Navigating to:', url);
+        // Use window.location.href instead of window.location for better compatibility
+        window.location.href = url;
+    } catch (error) {
+        console.error('Navigation error:', error);
+        // Fallback: try opening in new window if direct navigation fails
+        window.open(url, '_self');
+    }
+}
+
+// Prevent event bubbling on button clicks
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.feature-card .btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent card click when button is clicked
+        });
+    });
+});
+</script>
 
 </body>
 </html>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Paisabuddy - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="style.css">
   <style>
     /* Background animation */
@@ -13,10 +14,61 @@
       background: linear-gradient(-45deg, #89f7fe, #66a6ff, #a1c4fd, #c2e9fb);
       background-size: 400% 400%;
       animation: gradientBG 12s ease infinite;
+      min-height: 100vh;
+      padding-top: 80px;
+    }
+    
+    .container {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: calc(100vh - 160px);
+    }
+    
+    /* Navigation */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 0 0 25px 25px;
+      margin: 0 20px;
+      padding: 15px 30px;
+      box-shadow: 0 10px 40px rgba(206, 156, 148, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .navbar-brand {
+      color: #2563eb !important;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-decoration: none;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .nav-links a {
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+      color: #2563eb;
+      background: rgba(37, 99, 235, 0.1);
     }
     @keyframes gradientBG {
       0% {background-position:0% 50%;}
@@ -122,9 +174,24 @@
   </style>
 </head>
 <body>
+  
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <i class="fas fa-user-circle"></i> Paisabuddy
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="features.html"><i class="fas fa-star"></i> Features</a>
+      <a href="portfolio.html"><i class="fas fa-briefcase"></i> Trading</a>
+      <a href="dashboard.html"><i class="fas fa-chart-area"></i> Dashboard</a>
+      <a href="Register.html"><i class="fas fa-user-plus"></i> Register</a>
+    </div>
+  </nav>
 
-  <div class="login-card">
-    <img src="images/paisabuddy-login.png" alt="Login" class="login-image">
+  <div class="container">
+    <div class="login-card">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Paisabuddy Login" class="login-image">
     <h2>Welcome Back 👋</h2>
     <p>Login to your Paisabuddy account</p>
 
@@ -150,6 +217,7 @@
 
     <p id="message"></p>
     <p>Don't have an account? <a href="Register.html">Register here</a></p>
+    </div>
   </div>
 
   <script>

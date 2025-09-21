@@ -43,7 +43,8 @@
     
     .nav-links {
       display: flex;
-      gap: 30px;
+      gap: 20px;
+      flex-wrap: wrap;
     }
     
     .nav-links a {
@@ -53,11 +54,23 @@
       padding: 8px 16px;
       border-radius: 15px;
       transition: all 0.3s ease;
+      white-space: nowrap;
     }
     
     .nav-links a:hover {
       color: #2563eb;
       background: rgba(37, 99, 235, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+      .nav-links {
+        justify-content: center;
+      }
     }
     
     /* Header */
@@ -640,7 +653,8 @@
     <div class="nav-links">
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="features.html"><i class="fas fa-star"></i> Features</a>
-      <a href="portfolio.html"><i class="fas fa-chart-line"></i> Portfolio</a>
+      <a href="portfolio.html"><i class="fas fa-briefcase"></i> Trading</a>
+      <a href="dashboard.html"><i class="fas fa-chart-area"></i> Dashboard</a>
       <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
     </div>
   </nav>
@@ -753,8 +767,8 @@
           <span class="skill-tag">Income Planning</span>
           <span class="skill-tag">Budget Balancing</span>
         </div>
-        <button class="game-launch-btn" onclick="launchGame('budget_balance')">
-          <i class="fas fa-play"></i> Launch Game
+        <button class="game-launch-btn" onclick="window.location.href='budget-tracker.html'">
+          <i class="fas fa-play"></i> Play Budget Game
         </button>
       </div>
 
@@ -767,8 +781,8 @@
           <span class="skill-tag">Risk Assessment</span>
           <span class="skill-tag">Portfolio Management</span>
         </div>
-        <button class="game-launch-btn" onclick="launchGame('investment_growth')">
-          <i class="fas fa-play"></i> Launch Game
+        <button class="game-launch-btn" onclick="window.location.href='portfolio.html'">
+          <i class="fas fa-play"></i> Play Investment Game
         </button>
       </div>
 
@@ -781,18 +795,18 @@
           <span class="skill-tag">Security Awareness</span>
           <span class="skill-tag">Risk Recognition</span>
         </div>
-        <button class="game-launch-btn" onclick="launchGame('fraud_detection')">
-          <i class="fas fa-play"></i> Launch Game
+        <button class="game-launch-btn" onclick="window.location.href='fraud-challenges.html'">
+          <i class="fas fa-play"></i> Play Fraud Game
         </button>
       </div>
     </div>
 
     <div class="launcher-section">
       <div class="launcher-card">
-        <h3><i class="fas fa-rocket"></i> Game Launcher</h3>
-        <p>Access all games from a central hub with progress tracking, achievements, and comprehensive statistics.</p>
-        <button class="main-launcher-btn" onclick="launchGameLauncher()">
-          <i class="fas fa-gamepad"></i> Open Game Hub
+        <h3><i class="fas fa-chart-area"></i> Progress Dashboard</h3>
+        <p>View your comprehensive learning progress, achievements, and detailed statistics in our enhanced dashboard.</p>
+        <button class="main-launcher-btn" onclick="window.location.href='dashboard.html'">
+          <i class="fas fa-chart-line"></i> View Dashboard
         </button>
       </div>
     </div>
@@ -1156,322 +1170,26 @@
       location.reload();
     }
 
-    // Game launcher functions
+    // Simplified game launch - redirects to web-based modules
     function launchGame(gameType) {
-      // Check if Python and required dependencies are installed
-      if (!checkPythonInstallation()) {
-        showInstallationInstructions();
-        return;
-      }
-
-      // Show launching message
-      showLaunchingMessage(gameType);
-
-      // Try to launch the game using different methods
-      const gameFiles = {
-        'budget_balance': 'budget_balance.py',
-        'investment_growth': 'investment_growth.py',
-        'fraud_detection': 'fraud_detection.py'
+      const gameUrls = {
+        'budget_balance': 'budget-tracker.html',
+        'investment_growth': 'portfolio.html',
+        'fraud_detection': 'fraud-challenges.html'
       };
 
-      const gameFile = gameFiles[gameType];
-      
-      // Try to run the Python game directly
-      try {
-        // Create a temporary link to run the Python file
-        const pythonCommand = `python ../games/${gameFile}`;
-        
-        // Since browsers can't execute system commands directly, 
-        // we'll use a custom protocol handler or show enhanced instructions
-        if (navigator.userAgent.includes('Windows')) {
-          // Try Windows-specific approach
-          window.location.href = `python-run:../games/${gameFile}`;
-        } else {
-          // For other systems or fallback
-          executeGameFile(gameFile, gameType);
-        }
-      } catch (error) {
-        console.error('Error launching game:', error);
-        executeGameFile(gameFile, gameType);
-      }
-    }
-    
-    function executeGameFile(gameFile, gameType) {
-      // Create a more direct execution approach
-      const gameNames = {
-        'budget_balance': 'Budget Balance',
-        'investment_growth': 'Investment Garden',
-        'fraud_detection': 'Fraud Detective'
-      };
-      
-      const executionInstructions = `
-        <div class="execution-notice" id="execution-instructions">
-          <h4>🎮 Launching ${gameNames[gameType]}...</h4>
-          <p><strong>The game is being prepared. Please follow these steps:</strong></p>
-          <div style="background: #1f2937; color: #10b981; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; margin: 15px 0;">
-            <div>📁 Navigate to the games folder</div>
-            <div>⚡ Run: <span style="color: #fbbf24;">python ${gameFile}</span></div>
-            <div>🚀 Game will start automatically!</div>
-          </div>
-          <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
-            <button onclick="downloadAndRun('${gameFile}', '${gameType}')" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-              📥 Download & Run
-            </button>
-            <button onclick="downloadLauncher()" style="background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-              🚀 Easy Launcher
-            </button>
-            <button onclick="openGameFolder()" style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-              📂 Open Games Folder
-            </button>
-            <button onclick="closeInstructions()" style="background: #6b7280; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
-              ✖️ Close
-            </button>
-          </div>
-        </div>
-      `;
-      
-      // Remove any existing instructions
-      const existing = document.getElementById('execution-instructions');
-      if (existing) existing.remove();
-      
-      // Add instructions after games section
-      const gamesSection = document.querySelector('.games-section');
-      gamesSection.insertAdjacentHTML('afterend', executionInstructions);
-      
-      // Scroll to instructions
-      setTimeout(() => {
-        document.getElementById('execution-instructions').scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center' 
-        });
-      }, 100);
-    }
-
-    function launchGameLauncher() {
-      // Launch the main game launcher
-      if (!checkPythonInstallation()) {
-        showInstallationInstructions();
-        return;
-      }
-
-      showLaunchingMessage('game_launcher');
-      
-      try {
-        const link = document.createElement('a');
-        link.href = '../games/game_launcher.py';
-        link.download = 'game_launcher.py';
-        link.click();
-        
-        showGameInstructions('game_launcher');
-      } catch (error) {
-        showGameInstructions('game_launcher');
+      const url = gameUrls[gameType];
+      if (url) {
+        window.location.href = url;
+      } else {
+        alert('Game not available yet. Please try the web-based modules!');
       }
     }
 
-    function checkPythonInstallation() {
-      // Since we can't actually check Python installation from browser,
-      // we'll assume Python is available and try to launch the games
-      return true; // Allow games to launch directly
-    }
-
-    function showLaunchingMessage(gameType) {
-      const gameNames = {
-        'budget_balance': 'Budget Balance',
-        'investment_growth': 'Investment Garden', 
-        'fraud_detection': 'Fraud Detective',
-        'game_launcher': 'Game Launcher Hub'
-      };
-
-      const message = document.createElement('div');
-      message.className = 'launching-message';
-      message.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px 40px;
-        border-radius: 20px;
-        text-align: center;
-        z-index: 1000;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        font-size: 1.2rem;
-        font-weight: 600;
-      `;
-      
-      message.innerHTML = `
-        <div style="font-size: 3rem; margin-bottom: 15px;">🚀</div>
-        <div>Preparing to launch ${gameNames[gameType]}...</div>
-        <div style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">Please check the instructions below!</div>
-      `;
-      
-      document.body.appendChild(message);
-      
-      setTimeout(() => {
-        if (document.body.contains(message)) {
-          document.body.removeChild(message);
-        }
-      }, 3000);
-    }
-
-    function showGameInstructions(gameType) {
-      const gameNames = {
-        'budget_balance': 'Budget Balance Game',
-        'investment_growth': 'Investment Garden Game',
-        'fraud_detection': 'Fraud Detective Game',
-        'game_launcher': 'Paisabuddy Game Launcher'
-      };
-
-      const instructions = `
-        <div class="installation-notice" id="game-instructions">
-          <h4>🎮 ${gameNames[gameType]} Instructions</h4>
-          <p><strong>To play this game, follow these steps:</strong></p>
-          <ol style="text-align: left; margin: 15px 0; padding-left: 20px;">
-            <li>Make sure Python 3.7+ is installed on your computer</li>
-            <li>Download the game files from our <a href="../games/" target="_blank">games folder</a></li>
-            <li>Install required dependencies: <code>pip install pygame numpy</code></li>
-            <li>Run the game: <code>python ${gameType === 'game_launcher' ? 'game_launcher.py' : gameType + '.py'}</code></li>
-          </ol>
-          <p>💡 <strong>Tip:</strong> Use the Game Launcher Hub for the best experience with progress tracking!</p>
-          <button onclick="closeInstructions()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 8px; margin-top: 10px; cursor: pointer;">Got it!</button>
-        </div>
-      `;
-      
-      // Remove any existing instructions
-      const existing = document.getElementById('game-instructions');
-      if (existing) {
-        existing.remove();
-      }
-      
-      // Add instructions after games section
-      const gamesSection = document.querySelector('.games-section');
-      gamesSection.insertAdjacentHTML('afterend', instructions);
-      
-      // Scroll to instructions
-      document.getElementById('game-instructions').scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
-      });
-    }
-
-    function showInstallationInstructions() {
-      const instructions = `
-        <div class="installation-notice" id="installation-instructions">
-          <h4>🐍 Python Installation Required</h4>
-          <p><strong>To play our games, you need to install Python and some dependencies:</strong></p>
-          <ol style="text-align: left; margin: 15px 0; padding-left: 20px;">
-            <li>Download and install Python 3.7+ from <a href="https://python.org" target="_blank">python.org</a></li>
-            <li>Open command prompt/terminal</li>
-            <li>Install game dependencies: <code>pip install pygame numpy matplotlib</code></li>
-            <li>Download our game files and run them!</li>
-          </ol>
-          <p>💡 <strong>Why Python games?</strong> Our games are built with Python to teach you real programming concepts alongside financial literacy!</p>
-          <button onclick="closeInstructions()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 8px; margin-top: 10px; cursor: pointer;">Understood!</button>
-        </div>
-      `;
-      
-      // Remove any existing instructions
-      const existing = document.getElementById('installation-instructions');
-      if (existing) {
-        existing.remove();
-      }
-      
-      // Add instructions after games section
-      const gamesSection = document.querySelector('.games-section');
-      gamesSection.insertAdjacentHTML('afterend', instructions);
-      
-      // Scroll to instructions
-      document.getElementById('installation-instructions').scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
-      });
-    }
-
-    function downloadAndRun(gameFile, gameType) {
-      // Download the game file and provide execution instructions
-      const link = document.createElement('a');
-      link.href = `../games/${gameFile}`;
-      link.download = gameFile;
-      link.click();
-      
-      // Show enhanced run instructions
-      const runInstructions = `
-        <div class="run-notice" id="run-instructions" style="background: #ecfdf5; border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin: 20px 0;">
-          <h4 style="color: #065f46; margin-bottom: 15px;">📥 ${gameFile} Downloaded!</h4>
-          <p style="color: #047857; margin-bottom: 15px;"><strong>Now run the game:</strong></p>
-          <div style="background: #1f2937; color: #10b981; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; margin-bottom: 15px;">
-            <div>1️⃣ Open terminal/command prompt</div>
-            <div>2️⃣ Navigate to download folder: <span style="color: #fbbf24;">cd Downloads</span></div>
-            <div>3️⃣ Run the game: <span style="color: #fbbf24;">python ${gameFile}</span></div>
-          </div>
-          <div style="text-align: center;">
-            <button onclick="closeInstructions()" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-              ✅ Got it!
-            </button>
-          </div>
-        </div>
-      `;
-      
-      const existing = document.getElementById('execution-instructions');
-      if (existing) {
-        existing.innerHTML = runInstructions;
-      }
-    }
-    
-    function downloadLauncher() {
-      // Download the easy launcher batch file
-      const link = document.createElement('a');
-      link.href = '../games/launch_games.bat';
-      link.download = 'launch_games.bat';
-      link.click();
-      
-      // Show launcher instructions
-      const launcherInstructions = `
-        <div class="run-notice" id="run-instructions" style="background: #f3e8ff; border: 2px solid #8b5cf6; border-radius: 12px; padding: 20px; margin: 20px 0;">
-          <h4 style="color: #5b21b6; margin-bottom: 15px;">🚀 Easy Launcher Downloaded!</h4>
-          <p style="color: #7c3aed; margin-bottom: 15px;"><strong>Super easy to use:</strong></p>
-          <div style="background: #1f2937; color: #a78bfa; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace; margin-bottom: 15px;">
-            <div>1️⃣ Double-click <span style="color: #fbbf24;">launch_games.bat</span></div>
-            <div>2️⃣ Select a game from the menu</div>
-            <div>3️⃣ Play and enjoy! 🎮</div>
-          </div>
-          <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
-            <p style="color: #1e40af; margin: 0; font-size: 0.9rem;"><strong>💡 Tip:</strong> The launcher will automatically check for Python and install game dependencies!</p>
-          </div>
-          <div style="text-align: center;">
-            <button onclick="closeInstructions()" style="background: #8b5cf6; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
-              ✨ Perfect!
-            </button>
-          </div>
-        </div>
-      `;
-      
-      const existing = document.getElementById('execution-instructions');
-      if (existing) {
-        existing.innerHTML = launcherInstructions;
-      }
-    }
-    
-    function openGameFolder() {
-      // Try to open the games folder
-      try {
-        window.open('../games/', '_blank');
-      } catch (error) {
-        alert('Please navigate to the games folder manually and run the Python files.');
-      }
-    }
-
+    // Clean helper functions for the learning page
     function closeInstructions() {
-      const gameInstructions = document.getElementById('game-instructions');
-      const installInstructions = document.getElementById('installation-instructions');
-      const executionInstructions = document.getElementById('execution-instructions');
-      const runInstructions = document.getElementById('run-instructions');
-      
-      if (gameInstructions) gameInstructions.remove();
-      if (installInstructions) installInstructions.remove();
-      if (executionInstructions) executionInstructions.remove();
-      if (runInstructions) runInstructions.remove();
+      const instructions = document.querySelectorAll('[id$="-instructions"]');
+      instructions.forEach(el => el.remove());
     }
 
     // Initialize
