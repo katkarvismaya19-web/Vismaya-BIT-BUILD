@@ -7,6 +7,13 @@ from datetime import datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel
 import mysql.connector
+import requests
+import jwt
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 router = APIRouter()
 
@@ -25,6 +32,9 @@ class User(BaseModel):
     name: str
     username: str
     balance: float
+
+class GoogleAuthRequest(BaseModel):
+    token: str
 
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt"""
@@ -151,6 +161,106 @@ def login(credentials: LoginRequest, response: Response):
         cursor.close()
         conn.close()
 
+@router.post("/google-login")
+def google_login(google_auth: GoogleAuthRequest, response: Response):
+    """Login with Google OAuth token"""
+    try:
+        # Get Google Client ID from environment
+        google_client_id = os.getenv('GOOGLE_CLIENT_ID')
+        if not google_client_id:
+            raise HTTPException(status_code=500, detail="Google OAuth not configured")
+        
+        # Verify Google token
+        google_response = requests.get(
+            f"https://www.googleapis.com/oauth2/v1/userinfo?access_token={google_auth.token}"
+        )
+        
+        if google_response.status_code != 200:
+            raise HTTPException(status_code=400, detail="Invalid Google token")
+        
+        google_user = google_response.json()
+        email = google_user.get('email')
+        name = google_user.get('name')
+        google_id = google_user.get('id')
+        
+        if not email:
+            raise HTTPException(status_code=400, detail="Could not get email from Google")
+        
+        conn = database.get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        try:
+            # Check if user exists by email
+            cursor.execute(
+                "SELECT id, name, username, email, balance FROM Users WHERE email = %s", 
+                (email,)
+            )
+            
+            user = cursor.fetchone()
+            
+            if not user:
+                # Create new user with Google information
+                username = email.split('@')[0] + '_google'
+                
+                # Make sure username is unique
+                counter = 1
+                original_username = username
+                while True:
+                    cursor.execute("SELECT id FROM Users WHERE username = %s", (username,))
+                    if not cursor.fetchone():
+                        break
+                    username = f"{original_username}_{counter}"
+                    counter += 1
+                
+                # Create user without password (Google auth only)
+                cursor.execute(
+                    """INSERT INTO Users (name, username, email, password_hash, balance, google_id) 
+                       VALUES (%s, %s, %s, %s, 100000.00, %s)""",
+                    (name, username, email, '', google_id)
+                )
+                conn.commit()
+                user_id = cursor.lastrowid
+                
+                user = {
+                    'id': user_id,
+                    'name': name,
+                    'username': username,
+                    'email': email,
+                    'balance': 100000.00
+                }
+            
+            # Create session
+            session_token = create_session(user['id'])
+            
+            # Set cookie
+            response.set_cookie(
+                key="session_token",
+                value=session_token,
+                max_age=86400,  # 24 hours
+                httponly=True,
+                secure=False,  # Set to True in production with HTTPS
+                samesite="lax",
+            )
+            
+            return {
+                "message": f"Google login successful! Welcome, {user['name']}.",
+                "user": {
+                    "id": user['id'],
+                    "name": user['name'],
+                    "username": user['username'],
+                    "balance": user['balance']
+                }
+            }
+            
+        finally:
+            cursor.close()
+            conn.close()
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Google authentication failed: {str(e)}")
+        
 @router.post("/register")
 def register(user_data: RegisterRequest, response: Response):
     """Register a new user"""
@@ -169,7 +279,7 @@ def register(user_data: RegisterRequest, response: Response):
         # Create user
         cursor.execute(
             """INSERT INTO Users (name, username, email, password_hash, balance) 
-               VALUES (%s, %s, %s, %s, 10000.00)""",
+               VALUES (%s, %s, %s, %s, 100000.00)""",
             (user_data.name, user_data.username, user_data.email, hashed_password)
         )
         conn.commit()
@@ -193,7 +303,7 @@ def register(user_data: RegisterRequest, response: Response):
                 "id": user_id,
                 "name": user_data.name,
                 "username": user_data.username,
-                "balance": 10000.00
+                "balance": 100000.00
             }
         }
         

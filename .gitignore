@@ -109,3 +109,15 @@ media/
 # Local development server ports
 .port
 server.pid
+
+# Google OAuth credentials and secrets
+*client_secret*.json
+*credentials*.json
+config.local.js
+config.prod.js
+
+# Test and backup files
+*test*
+*backup*
+*old*
+*temp*

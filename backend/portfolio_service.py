@@ -130,7 +130,7 @@ class PortfolioService:
             "description": "Your personalized investment portfolio",
             "created_at": datetime.now().isoformat(),
             "initial_balance": 100000,
-            "current_balance": 95000,  # Some money invested
+            "current_balance": 50000,  # Some money invested from ₹1 lakh
             "holdings": [
                 {
                     "symbol": "TCS",
