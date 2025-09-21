@@ -28,6 +28,8 @@ from trading_simulator import create_trading_simulator
 from ai_personalization import create_ai_engine
 from engagement_system import create_engagement_system
 from analytics_engine import create_analytics_engine
+import subprocess
+import sys
 
 # Import Gemini API service
 from gemini_service import gemini_service
@@ -586,10 +588,14 @@ async def get_portfolio_analysis(
             "message": "Failed to analyze portfolio"
         }
 
-# Unified Simple Portfolio Endpoint (Replaces separate portfolio/trading systems)
-@app.get("/api/user/portfolio")
-async def get_unified_user_portfolio(user_id: int = Depends(get_current_user_optional)):
-    """Get user's unified portfolio - single source of truth for all holdings and trades"""
+# Portfolio Endpoints for Frontend Pages
+
+@app.get("/api/portfolio/{portfolio_type}")
+async def get_portfolio_by_type(
+    portfolio_type: str,  # 'intraday' or 'longterm'
+    user_id: int = Depends(get_current_user_optional)
+):
+    """Get portfolio data for portfolio.html - supports intraday and longterm views"""
     try:
         # Get the user's portfolio
         portfolio = portfolio_service.get_user_portfolio(user_id)
@@ -602,7 +608,6 @@ async def get_unified_user_portfolio(user_id: int = Depends(get_current_user_opt
         for holding in portfolio.get("holdings", []):
             symbol = holding["symbol"]
             if symbol in stock_prices:
-                # Update current price
                 old_price = holding.get("current_price", holding["avg_price"])
                 new_price = stock_prices[symbol]
                 holding["current_price"] = new_price
@@ -613,21 +618,39 @@ async def get_unified_user_portfolio(user_id: int = Depends(get_current_user_opt
                 holding["profit_loss_percent"] = (
                     (holding["profit_loss"] / holding["invested_amount"]) * 100
                 ) if holding["invested_amount"] > 0 else 0
-                
-                logger.info(f"Updated {symbol}: ₹{old_price:.2f} → ₹{new_price:.2f}")
         
-        # Recalculate portfolio metrics with updated prices
+        # Recalculate portfolio metrics
         portfolio = portfolio_service._calculate_portfolio_metrics(portfolio)
         
-        # Structure the response for frontend
-        response = {
+        # Filter trades based on portfolio type
+        all_trades = portfolio.get("trade_history", [])
+        if portfolio_type == "intraday":
+            # Show trades from today only
+            today = datetime.now().date()
+            filtered_trades = [
+                trade for trade in all_trades 
+                if datetime.fromisoformat(trade["timestamp"]).date() == today
+            ]
+            portfolio_name = f"Intraday Portfolio"
+        elif portfolio_type == "longterm":
+            # Show all trades
+            filtered_trades = all_trades
+            portfolio_name = f"Long-term Portfolio"
+        else:
+            filtered_trades = all_trades
+            portfolio_name = "My Portfolio"
+        
+        # Structure response for portfolio.html
+        return {
             "status": "success",
+            "portfolio_type": portfolio_type,
             "portfolio": {
                 "id": portfolio.get("portfolio_id", 1),
-                "name": portfolio.get("name", "My Portfolio"),
-                "description": portfolio.get("description", "Your investment portfolio"),
+                "name": portfolio_name,
+                "type": portfolio_type,
+                "description": f"Your {portfolio_type} trading portfolio",
                 
-                # Financial Summary
+                # Key metrics for portfolio view
                 "summary": {
                     "total_invested": portfolio.get("metrics", {}).get("total_invested", 0),
                     "current_value": portfolio.get("metrics", {}).get("current_value", 0),
@@ -639,50 +662,477 @@ async def get_unified_user_portfolio(user_id: int = Depends(get_current_user_opt
                     "day_change_percent": portfolio.get("metrics", {}).get("day_change_percent", 0)
                 },
                 
-                # Holdings/Stocks
+                # Holdings for portfolio display
                 "holdings": portfolio.get("holdings", []),
                 "holdings_count": len(portfolio.get("holdings", [])),
                 
-                # Sector Allocation
+                # Sector allocation chart data
                 "sector_allocation": portfolio.get("metrics", {}).get("sector_allocation", {}),
                 
-                # Trade History
-                "recent_trades": portfolio.get("trade_history", [])[-10:],  # Last 10 trades
-                "total_trades": len(portfolio.get("trade_history", [])),
+                # Recent trades for this portfolio type
+                "recent_trades": filtered_trades[-10:],  # Last 10 trades
+                "total_trades": len(filtered_trades),
+                
+                # Trading interface data
+                "available_stocks": gemini_service.generate_dynamic_stock_data(),
+                
+                # Trading options for portfolio page
+                "trading_options": [
+                    {
+                        "type": "intraday",
+                        "label": "Intraday Trading",
+                        "description": "Real-time market simulation",
+                        "active": portfolio_type == "intraday",
+                        "url": "/portfolio.html?type=intraday"
+                    },
+                    {
+                        "type": "longterm", 
+                        "label": "Long-term Investment",
+                        "description": "Historical data simulation",
+                        "active": portfolio_type == "longterm",
+                        "url": "/portfolio.html?type=longterm"
+                    }
+                ],
                 
                 # Timestamps
-                "created_at": portfolio.get("created_at"),
-                "last_updated": portfolio.get("last_updated")
+                "last_updated": datetime.now().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting {portfolio_type} portfolio: {e}")
+        return {
+            "status": "error",
+            "message": f"Failed to load {portfolio_type} portfolio",
+            "portfolio": {
+                "id": 1,
+                "name": f"{portfolio_type.title()} Portfolio",
+                "type": portfolio_type,
+                "summary": {"total_portfolio_value": 100000, "total_profit_loss": 0},
+                "holdings": [],
+                "available_stocks": []
+            }
+        }
+
+@app.get("/api/portfolio/trading-interface")
+async def get_portfolio_trading_interface(user_id: int = Depends(get_current_user_optional)):
+    """Get trading interface data for portfolio.html - includes both intraday and longterm options"""
+    try:
+        # Get user's current portfolio status
+        portfolio = portfolio_service.get_user_portfolio(user_id)
+        
+        # Get available stocks for trading
+        available_stocks = gemini_service.generate_dynamic_stock_data()
+        
+        # Get current holdings for quick sell options
+        current_holdings = portfolio.get("holdings", [])
+        
+        return {
+            "status": "success",
+            "trading_interface": {
+                "user_balance": portfolio.get("current_balance", 100000),
+                "portfolio_value": portfolio.get("metrics", {}).get("total_portfolio_value", 100000),
+                
+                # Trading options (moved from dashboard)
+                "trading_modes": [
+                    {
+                        "type": "intraday",
+                        "label": "📈 Intraday Trading",
+                        "description": "Real-time market simulation",
+                        "features": ["Live market data", "Quick buy/sell", "Day trading strategies"],
+                        "url": "/portfolio.html?type=intraday",
+                        "button_class": "btn-primary"
+                    },
+                    {
+                        "type": "longterm",
+                        "label": "🏛️ Long-term Investment", 
+                        "description": "Historical data simulation",
+                        "features": ["Historical analysis", "Long-term holdings", "Investment strategies"],
+                        "url": "/portfolio.html?type=longterm",
+                        "button_class": "btn-secondary"
+                    }
+                ],
+                
+                # Available stocks for trading
+                "available_stocks": available_stocks,
+                "trending_stocks": available_stocks[:5],  # Top 5 trending
+                
+                # Current holdings for quick actions
+                "current_holdings": current_holdings,
+                "holdings_count": len(current_holdings),
+                
+                # Quick trading suggestions
+                "trading_suggestions": [
+                    {
+                        "action": "buy",
+                        "symbol": "TCS",
+                        "reason": "Strong technical indicators",
+                        "confidence": "high"
+                    },
+                    {
+                        "action": "sell",
+                        "symbol": "RELIANCE", 
+                        "reason": "Take profit opportunity",
+                        "confidence": "medium"
+                    }
+                ]
             },
             "timestamp": datetime.now().isoformat()
         }
         
-        return response
+    except Exception as e:
+        logger.error(f"Error getting trading interface: {e}")
+        return {
+            "status": "error",
+            "message": "Failed to load trading interface",
+            "trading_interface": {
+                "user_balance": 100000,
+                "portfolio_value": 100000,
+                "trading_modes": [
+                    {"type": "intraday", "label": "Intraday Trading", "url": "/portfolio.html?type=intraday"},
+                    {"type": "longterm", "label": "Long-term Investment", "url": "/portfolio.html?type=longterm"}
+                ],
+                "available_stocks": [],
+                "current_holdings": []
+            }
+        }
+
+@app.get("/api/dashboard/overview")
+async def get_dashboard_overview(user_id: int = Depends(get_current_user_optional)):
+    """Get comprehensive dashboard data for dashboard.html"""
+    try:
+        # Get user's portfolio
+        portfolio = portfolio_service.get_user_portfolio(user_id)
+        
+        # Update with real-time market data
+        dynamic_stocks = gemini_service.generate_dynamic_stock_data()
+        stock_prices = {stock["symbol"]: stock["current_price"] for stock in dynamic_stocks}
+        
+        # Update portfolio holdings with current prices
+        for holding in portfolio.get("holdings", []):
+            symbol = holding["symbol"]
+            if symbol in stock_prices:
+                holding["current_price"] = stock_prices[symbol]
+                holding["current_value"] = holding["quantity"] * stock_prices[symbol]
+                holding["profit_loss"] = holding["current_value"] - holding["invested_amount"]
+                holding["profit_loss_percent"] = (
+                    (holding["profit_loss"] / holding["invested_amount"]) * 100
+                ) if holding["invested_amount"] > 0 else 0
+        
+        # Recalculate metrics
+        portfolio = portfolio_service._calculate_portfolio_metrics(portfolio)
+        
+        # Get AI insights and analysis
+        market_news = gemini_service.get_market_news_with_gemini()
+        trading_insights = gemini_service.get_trading_insights(portfolio)
+        
+        # Analyze all holdings
+        stock_analyses = {}
+        for holding in portfolio.get("holdings", []):
+            symbol = holding["symbol"]
+            stock_analyses[symbol] = gemini_service.get_stock_analysis_with_gemini(symbol)
+        
+        # Structure comprehensive dashboard data
+        dashboard_data = {
+            "status": "success",
+            
+            # Portfolio overview
+            "portfolio_summary": {
+                "total_portfolio_value": portfolio.get("metrics", {}).get("total_portfolio_value", 0),
+                "total_invested": portfolio.get("metrics", {}).get("total_invested", 0),
+                "total_profit_loss": portfolio.get("metrics", {}).get("total_profit_loss", 0),
+                "total_return_percent": portfolio.get("metrics", {}).get("total_return_percent", 0),
+                "cash_balance": portfolio.get("current_balance", 0),
+                "day_change": portfolio.get("metrics", {}).get("day_change", 0),
+                "day_change_percent": portfolio.get("metrics", {}).get("day_change_percent", 0),
+                "holdings_count": len(portfolio.get("holdings", [])),
+                "diversification_score": trading_insights.get("diversification_score", 75)
+            },
+            
+            # Detailed transaction history
+            "transactions": {
+                "all_trades": portfolio.get("trade_history", []),
+                "total_trades": len(portfolio.get("trade_history", [])),
+                "recent_trades": portfolio.get("trade_history", [])[-20:],  # Last 20 trades
+                "trade_summary": {
+                    "total_buy_trades": len([t for t in portfolio.get("trade_history", []) if t["transaction_type"] == "buy"]),
+                    "total_sell_trades": len([t for t in portfolio.get("trade_history", []) if t["transaction_type"] == "sell"]),
+                    "total_fees_paid": sum(t.get("fees", 0) for t in portfolio.get("trade_history", [])),
+                    "average_trade_size": sum(t.get("total_amount", 0) for t in portfolio.get("trade_history", [])) / max(len(portfolio.get("trade_history", [])), 1)
+                }
+            },
+            
+            # Holdings analysis
+            "holdings_analysis": {
+                "current_holdings": portfolio.get("holdings", []),
+                "sector_allocation": portfolio.get("metrics", {}).get("sector_allocation", {}),
+                "top_performers": sorted(
+                    portfolio.get("holdings", []), 
+                    key=lambda x: x.get("profit_loss_percent", 0), 
+                    reverse=True
+                )[:5],
+                "worst_performers": sorted(
+                    portfolio.get("holdings", []), 
+                    key=lambda x: x.get("profit_loss_percent", 0)
+                )[:5],
+                "stock_analyses": stock_analyses
+            },
+            
+            # AI insights and recommendations
+            "ai_insights": {
+                "portfolio_health": trading_insights.get("portfolio_health", "good"),
+                "risk_assessment": trading_insights.get("risk_assessment", "moderate"),
+                "recommendations": trading_insights.get("recommendations", []),
+                "market_outlook": trading_insights.get("market_outlook", {}),
+                "personalized_tips": [
+                    "Consider rebalancing your portfolio quarterly",
+                    "Monitor sector concentration risk", 
+                    "Set stop-loss orders for risk management",
+                    "Review and adjust position sizes regularly"
+                ]
+            },
+            
+            # Market overview
+            "market_data": {
+                "market_news": market_news,
+                "trending_stocks": dynamic_stocks[:10],  # Top 10 stocks
+                "sector_performance": {
+                    "IT": random.uniform(-2, 4),
+                    "Banking": random.uniform(-1, 3),
+                    "Energy": random.uniform(-3, 2),
+                    "FMCG": random.uniform(-1, 2),
+                    "Telecom": random.uniform(-2, 3)
+                },
+                "market_indices": {
+                    "nifty_50": {"value": 21850, "change": 145.30, "change_percent": 0.67},
+                    "sensex": {"value": 72150, "change": 287.50, "change_percent": 0.40}
+                }
+            },
+            
+            # Performance metrics
+            "performance_metrics": {
+                "total_return": portfolio.get("metrics", {}).get("total_return_percent", 0),
+                "annualized_return": portfolio.get("metrics", {}).get("total_return_percent", 0) * 4,  # Simplified
+                "volatility": random.uniform(8, 15),
+                "sharpe_ratio": random.uniform(0.8, 1.5),
+                "max_drawdown": random.uniform(-5, -2),
+                "win_rate": len([t for t in portfolio.get("trade_history", []) if t.get("profit_loss", 0) > 0]) / max(len(portfolio.get("trade_history", [])), 1) * 100
+            },
+            
+            # Navigation links for dashboard (no trading buttons)
+            "navigation_links": [
+                {"action": "go_to_portfolio", "label": "Go to Portfolio", "url": "/portfolio.html", "description": "Trade stocks and manage investments"},
+                {"action": "view_analysis", "label": "Stock Analysis", "url": "/analysis.html", "description": "AI-powered stock insights"},
+                {"action": "view_reports", "label": "Reports", "url": "/reports.html", "description": "Detailed performance reports"}
+            ],
+            
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        return dashboard_data
         
     except Exception as e:
-        logger.error(f"Error getting unified portfolio: {e}")
-        # Return fallback portfolio
-        fallback = portfolio_service._get_fallback_portfolio()
+        logger.error(f"Error getting dashboard overview: {e}")
         return {
-            "status": "success", 
-            "portfolio": {
-                "id": 1,
-                "name": "Demo Portfolio",
-                "description": "Demo portfolio for testing",
-                "summary": {
-                    "total_invested": 0,
-                    "current_value": 0,
-                    "cash_balance": 100000,
-                    "total_portfolio_value": 100000,
-                    "total_profit_loss": 0,
-                    "total_return_percent": 0
-                },
-                "holdings": [],
-                "holdings_count": 0,
-                "sector_allocation": {},
-                "recent_trades": [],
-                "total_trades": 0
+            "status": "error",
+            "message": "Failed to load dashboard data",
+            "portfolio_summary": {"total_portfolio_value": 100000, "total_profit_loss": 0},
+            "transactions": {"all_trades": [], "total_trades": 0},
+            "holdings_analysis": {"current_holdings": [], "sector_allocation": {}},
+            "ai_insights": {"recommendations": []},
+            "market_data": {"market_news": []}
+        }
+
+# Additional endpoints for enhanced portfolio functionality
+
+@app.get("/api/portfolio/{portfolio_type}/trades")
+async def get_portfolio_trades(
+    portfolio_type: str,
+    limit: int = 50,
+    user_id: int = Depends(get_current_user_optional)
+):
+    """Get detailed trade history for specific portfolio type"""
+    try:
+        portfolio = portfolio_service.get_user_portfolio(user_id)
+        all_trades = portfolio.get("trade_history", [])
+        
+        if portfolio_type == "intraday":
+            # Filter trades from today only
+            today = datetime.now().date()
+            filtered_trades = [
+                trade for trade in all_trades 
+                if datetime.fromisoformat(trade["timestamp"]).date() == today
+            ]
+        elif portfolio_type == "longterm":
+            # All trades older than today
+            today = datetime.now().date()
+            filtered_trades = [
+                trade for trade in all_trades 
+                if datetime.fromisoformat(trade["timestamp"]).date() < today
+            ]
+        else:
+            filtered_trades = all_trades
+        
+        # Sort by timestamp (most recent first) and limit
+        sorted_trades = sorted(filtered_trades, key=lambda x: x["timestamp"], reverse=True)[:limit]
+        
+        return {
+            "status": "success",
+            "portfolio_type": portfolio_type,
+            "trades": sorted_trades,
+            "total_trades": len(filtered_trades),
+            "trade_summary": {
+                "total_buy_value": sum(t.get("total_amount", 0) for t in filtered_trades if t["transaction_type"] == "buy"),
+                "total_sell_value": sum(t.get("total_amount", 0) for t in filtered_trades if t["transaction_type"] == "sell"),
+                "total_fees": sum(t.get("fees", 0) for t in filtered_trades),
+                "buy_count": len([t for t in filtered_trades if t["transaction_type"] == "buy"]),
+                "sell_count": len([t for t in filtered_trades if t["transaction_type"] == "sell"])
             }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting {portfolio_type} trades: {e}")
+        return {
+            "status": "error",
+            "message": "Failed to fetch trade history",
+            "trades": [],
+            "total_trades": 0
+        }
+
+@app.get("/api/dashboard/performance")
+async def get_portfolio_performance(user_id: int = Depends(get_current_user_optional)):
+    """Get detailed performance analytics for dashboard"""
+    try:
+        portfolio = portfolio_service.get_user_portfolio(user_id)
+        all_trades = portfolio.get("trade_history", [])
+        
+        # Calculate performance metrics
+        if not all_trades:
+            return {
+                "status": "success",
+                "performance": {
+                    "total_return": 0,
+                    "daily_returns": [],
+                    "monthly_returns": [],
+                    "volatility": 0,
+                    "sharpe_ratio": 0
+                }
+            }
+        
+        # Generate mock performance data for demo
+        import math
+        days = 30
+        daily_returns = []
+        cumulative_return = 0
+        
+        for i in range(days):
+            daily_return = random.uniform(-2, 3)  # -2% to +3% daily returns
+            daily_returns.append({
+                "date": (datetime.now() - timedelta(days=days-i)).strftime("%Y-%m-%d"),
+                "return": daily_return,
+                "cumulative_return": cumulative_return + daily_return
+            })
+            cumulative_return += daily_return
+        
+        # Calculate statistics
+        returns_values = [r["return"] for r in daily_returns]
+        avg_return = sum(returns_values) / len(returns_values)
+        volatility = math.sqrt(sum((r - avg_return) ** 2 for r in returns_values) / len(returns_values))
+        sharpe_ratio = (avg_return / volatility) if volatility > 0 else 0
+        
+        return {
+            "status": "success",
+            "performance": {
+                "total_return": cumulative_return,
+                "daily_returns": daily_returns,
+                "monthly_returns": [
+                    {"month": "Jan 2025", "return": random.uniform(-5, 8)},
+                    {"month": "Feb 2025", "return": random.uniform(-3, 6)},
+                    {"month": "Mar 2025", "return": random.uniform(-2, 7)}
+                ],
+                "statistics": {
+                    "average_daily_return": round(avg_return, 2),
+                    "volatility": round(volatility, 2),
+                    "sharpe_ratio": round(sharpe_ratio, 2),
+                    "max_drawdown": round(random.uniform(-8, -2), 2),
+                    "win_rate": round(len([r for r in returns_values if r > 0]) / len(returns_values) * 100, 1),
+                    "best_day": round(max(returns_values), 2),
+                    "worst_day": round(min(returns_values), 2)
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting performance data: {e}")
+        return {
+            "status": "error",
+            "message": "Failed to calculate performance metrics",
+            "performance": {"total_return": 0, "daily_returns": []}
+        }
+
+@app.post("/api/portfolio/trade")
+async def execute_portfolio_trade(
+    trade_data: dict,
+    user_id: int = Depends(get_current_user_optional)
+):
+    """Execute trade specifically for portfolio pages (unified endpoint)"""
+    try:
+        # Validate trade data
+        required_fields = ["symbol", "quantity", "transaction_type"]
+        for field in required_fields:
+            if field not in trade_data:
+                return {"status": "error", "message": f"Missing required field: {field}"}
+        
+        # Get current stock price
+        dynamic_stocks = gemini_service.generate_dynamic_stock_data()
+        stock_prices = {stock["symbol"]: stock["current_price"] for stock in dynamic_stocks}
+        
+        symbol = trade_data["symbol"]
+        quantity = int(trade_data["quantity"])
+        transaction_type = trade_data["transaction_type"]
+        
+        execution_price = stock_prices.get(symbol, 3500.00)
+        total_value = execution_price * quantity
+        fees = 25.00
+        
+        # Create trade result
+        trade_result = {
+            "success": True,
+            "message": f"{transaction_type.capitalize()} order executed: {quantity} shares of {symbol}",
+            "trade_id": random.randint(1000, 9999),
+            "symbol": symbol,
+            "transaction_type": transaction_type,
+            "quantity": quantity,
+            "execution_price": execution_price,
+            "total_value": total_value,
+            "fees": fees,
+            "timestamp": datetime.now().isoformat(),
+            "status": "completed"
+        }
+        
+        # Update user's portfolio
+        portfolio_updated = portfolio_service.update_portfolio_with_trade(
+            user_id=user_id,
+            trade_data=trade_result
+        )
+        
+        if portfolio_updated:
+            # Get updated portfolio data
+            updated_portfolio = portfolio_service.get_user_portfolio(user_id)
+            trade_result["portfolio_balance"] = updated_portfolio.get("current_balance", 0)
+            trade_result["portfolio_value"] = updated_portfolio.get("metrics", {}).get("total_portfolio_value", 0)
+        
+        return {
+            "status": "success",
+            "trade": trade_result,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error executing portfolio trade: {e}")
+        return {
+            "status": "error",
+            "message": f"Failed to execute trade: {str(e)}"
         }
 
 # Social Features Endpoints
@@ -851,132 +1301,14 @@ async def get_portfolio_analytics(
         logger.error(f"Get portfolio analytics error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Dashboard Endpoint
-@app.get("/dashboard/overview")
-async def get_dashboard_overview(current_user: int = Depends(get_current_user_optional)):
-    """Get comprehensive dashboard overview"""
-    try:
-        # Return comprehensive demo dashboard data
-        dashboard = {
-            "user_stats": {
-                "balance": 95000,
-                "portfolio_value": 105000,
-                "profit_loss": 5000,
-                "total_trades": 12,
-                "successful_trades": 9,
-                "win_rate": 75,
-                "active_positions": 6,
-                "watchlist_count": 15
-            },
-            "achievements": {
-                "total_earned": 3,
-                "total_points": 500,
-                "recent_achievements": [
-                    {
-                        "name": "Community Contributor",
-                        "earned_at": "2025-01-20T14:15:00Z",
-                        "icon": "💬"
-                    }
-                ]
-            },
-            "performance": {
-                "total_return": 5.0,
-                "daily_return": 0.2,
-                "monthly_return": 2.1,
-                "volatility": 12.5,
-                "sharpe_ratio": 1.2,
-                "max_drawdown": -3.2
-            },
-            "ai_insights": {
-                "personality": {
-                    "risk_tolerance": "moderate",
-                    "trading_style": "balanced",
-                    "confidence_level": "growing"
-                },
-                "recommendations": [
-                    {
-                        "title": "Diversify Portfolio",
-                        "message": "Consider adding international stocks",
-                        "priority": "high"
-                    },
-                    {
-                        "title": "Review Banking Sector",
-                        "message": "Banking stocks showing strong momentum",
-                        "priority": "medium"
-                    }
-                ]
-            },
-            "market_summary": {
-                "nifty_50": {
-                    "value": 21850,
-                    "change": 145.30,
-                    "change_percent": 0.67
-                },
-                "sensex": {
-                    "value": 72150,
-                    "change": 287.50,
-                    "change_percent": 0.40
-                },
-                "top_gainers": [],
-                "market_news": [],
-                "dynamic_stocks": []
-            }
-        }
-        
-        # Enhance with Gemini API data
-        try:
-            # Get dynamic stock data
-            dynamic_stocks = gemini_service.generate_dynamic_stock_data()
-            dashboard["market_summary"]["dynamic_stocks"] = dynamic_stocks[:5]  # Top 5 stocks
-            
-            # Get top gainers from dynamic data
-            gainers = sorted(
-                [s for s in dynamic_stocks if s["change_percent"] > 0],
-                key=lambda x: x["change_percent"],
-                reverse=True
-            )[:3]
-            dashboard["market_summary"]["top_gainers"] = [
-                {"symbol": g["symbol"], "change": g["change_percent"]} for g in gainers
-            ]
-            
-            # Get market news
-            market_news = gemini_service.get_market_news_with_gemini()
-            dashboard["market_summary"]["market_news"] = market_news[:3]  # Latest 3 news
-            
-            # Get trading insights
-            portfolio = {"holdings": []}  # Placeholder portfolio
-            trading_insights = gemini_service.get_trading_insights(portfolio)
-            dashboard["ai_insights"]["recommendations"] = trading_insights.get("recommendations", [])
-            dashboard["ai_insights"]["market_outlook"] = trading_insights.get("market_outlook", {})
-            
-        except Exception as e:
-            logger.error(f"Error enhancing dashboard with Gemini data: {e}")
-            
-        # Try to get real data if engines are available
-        if engagement_system:
-            try:
-                achievements = engagement_system.get_user_achievements(current_user)
-                dashboard["achievements"].update(achievements)
-            except:
-                pass
-        
-        if analytics_engine:
-            try:
-                analytics_summary = analytics_engine.get_user_analytics_summary(current_user)
-                dashboard["performance"].update(analytics_summary.get("overall_metrics", {}))
-            except:
-                pass
-        
-        return dashboard
-    except Exception as e:
-        logger.error(f"Get dashboard error: {e}")
-        # Return basic demo data on error
-        return {
-            "user_stats": {"balance": 100000, "portfolio_value": 100000, "profit_loss": 0, "total_trades": 0},
-            "achievements": {"total_earned": 0, "total_points": 0},
-            "performance": {},
-            "ai_insights": {}
-        }
+# OLD Dashboard Endpoint - DEPRECATED 
+# Use /api/dashboard/overview instead
+@app.get("/dashboard/overview") 
+async def get_old_dashboard_overview(current_user: int = Depends(get_current_user_optional)):
+    """DEPRECATED: Use /api/dashboard/overview instead. This endpoint redirects for backward compatibility."""
+    # Redirect to new endpoint
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/api/dashboard/overview", status_code=307)
 
 # Market Data Endpoints - Enhanced with Gemini API
 @app.get("/market/stocks")
@@ -1053,6 +1385,154 @@ async def health_check():
         }
     }
 
+# Game Launcher Endpoints
+class GameLaunchRequest(BaseModel):
+    game_name: str = Field(..., pattern="^(budget_balance|investment_growth|fraud_detection|game_launcher)$")
+    username: Optional[str] = None
+
+@app.post("/api/games/launch")
+async def launch_pygame_game(
+    game_request: GameLaunchRequest,
+    current_user: int = Depends(get_current_user_optional)
+):
+    """Launch a pygame game from the games directory"""
+    try:
+        # Map game names to their Python files
+        game_files = {
+            "budget_balance": "budget_balance.py",
+            "investment_growth": "investment_growth.py", 
+            "fraud_detection": "fraud_detection.py",
+            "game_launcher": "game_launcher.py"
+        }
+        
+        game_filename = game_files.get(game_request.game_name)
+        if not game_filename:
+            raise HTTPException(status_code=400, detail="Invalid game name")
+            
+        # Get the path to the games directory
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        project_dir = os.path.dirname(backend_dir)
+        games_dir = os.path.join(project_dir, "games")
+        game_path = os.path.join(games_dir, game_filename)
+        
+        # Check if game file exists
+        if not os.path.exists(game_path):
+            return {
+                "status": "error",
+                "message": f"Game file not found: {game_filename}",
+                "game_path": game_path,
+                "suggestion": "Please ensure the game files are in the games/ directory"
+            }
+        
+        # Launch the game as a separate process
+        try:
+            # Use subprocess to launch the game
+            process = subprocess.Popen(
+                [sys.executable, game_path],
+                cwd=games_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            
+            logger.info(f"Launched {game_request.game_name} (PID: {process.pid})")
+            
+            return {
+                "status": "success",
+                "message": f"Successfully launched {game_request.game_name}",
+                "game_name": game_request.game_name,
+                "process_id": process.pid,
+                "game_path": game_path,
+                "instructions": [
+                    "The game window should open shortly",
+                    "If the game doesn't start, check that pygame is installed: pip install pygame",
+                    "You can close this browser tab - the game runs independently"
+                ]
+            }
+            
+        except Exception as launch_error:
+            logger.error(f"Failed to launch {game_request.game_name}: {launch_error}")
+            return {
+                "status": "error", 
+                "message": f"Failed to launch game: {str(launch_error)}",
+                "troubleshooting": [
+                    "Make sure pygame is installed: pip install pygame",
+                    "Make sure Python is in your system PATH",
+                    "Check that all game dependencies are installed",
+                    "Try running the game directly from command line"
+                ]
+            }
+            
+    except Exception as e:
+        logger.error(f"Game launch error: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+@app.get("/api/games/available")
+async def get_available_games():
+    """Get list of available pygame games"""
+    try:
+        # Get the path to the games directory
+        backend_dir = os.path.dirname(os.path.abspath(__file__))
+        project_dir = os.path.dirname(backend_dir)
+        games_dir = os.path.join(project_dir, "games")
+        
+        games = [
+            {
+                "id": "budget_balance",
+                "name": "Budget Balance",
+                "description": "Catch income items while avoiding expenses! Learn to balance your financial life through fast-paced action gameplay.",
+                "icon": "💰",
+                "skills": ["Expense Management", "Income Planning", "Budget Balancing"],
+                "file_exists": os.path.exists(os.path.join(games_dir, "budget_balance.py"))
+            },
+            {
+                "id": "investment_growth", 
+                "name": "Investment Garden",
+                "description": "Plant investments and watch them grow! Learn about compound interest, diversification, and long-term wealth building.",
+                "icon": "🌱", 
+                "skills": ["Compound Interest", "Risk Assessment", "Portfolio Management"],
+                "file_exists": os.path.exists(os.path.join(games_dir, "investment_growth.py"))
+            },
+            {
+                "id": "fraud_detection",
+                "name": "Fraud Detective", 
+                "description": "Identify and eliminate scams! Master the art of spotting financial fraud, phishing attempts, and malicious schemes.",
+                "icon": "🛡️",
+                "skills": ["Scam Detection", "Security Awareness", "Risk Recognition"],
+                "file_exists": os.path.exists(os.path.join(games_dir, "fraud_detection.py"))
+            },
+            {
+                "id": "game_launcher",
+                "name": "Game Launcher",
+                "description": "Launch all games from a unified pygame interface with progress tracking and achievements.",
+                "icon": "🎮",
+                "skills": ["Game Management", "Progress Tracking", "Achievement System"],
+                "file_exists": os.path.exists(os.path.join(games_dir, "game_launcher.py"))
+            }
+        ]
+        
+        # Check which games are actually available
+        available_games = [game for game in games if game["file_exists"]]
+        missing_games = [game for game in games if not game["file_exists"]]
+        
+        return {
+            "status": "success",
+            "available_games": available_games,
+            "missing_games": missing_games,
+            "total_games": len(games),
+            "available_count": len(available_games),
+            "games_directory": games_dir,
+            "installation_note": "Make sure pygame is installed: pip install pygame" if available_games else "No games found in games directory"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting available games: {e}")
+        return {
+            "status": "error",
+            "message": "Failed to get available games",
+            "available_games": [],
+            "error": str(e)
+        }
+
 @app.get("/", tags=["Root"])
 def read_root():
     """Root endpoint with enhanced features info"""
@@ -1066,6 +1546,7 @@ def read_root():
             "Social Features & Community",
             "Achievements & Competitions", 
             "Advanced Analytics & Insights",
-            "Real-time Market Events"
+            "Real-time Market Events",
+            "Pygame Game Launcher"
         ]
     }

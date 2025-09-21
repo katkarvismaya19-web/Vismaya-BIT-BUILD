@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Risk Profiler & Portfolio Health Checker</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:40px 20px;
+  }
+  h1 { color:#0ea5a4; margin-bottom:20px; text-align:center; }
+  .risk-profiler {
+    background:#fff;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom:20px;
+    width:100%;
+    max-width:500px;
+  }
+  .risk-profiler ul { padding-left:20px; }
+  button {
+    background:#0ea5a4; color:#fff; border:none; padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-weight:bold; margin-top:10px;
+  }
+  button:hover { background:#089c9b; }
+  .back { margin-top:15px; display:inline-block; text-decoration:none; color:#2563eb; }
+  .result { font-weight:bold; color:#2563eb; margin-top:10px; }
+</style>
+</head>
+<body>
+<h1>Risk Profiler & Portfolio Health Checker</h1>
+
+<div class="risk-profiler">
+  <h3>Portfolio Summary</h3>
+  Cash: ₹<span id="cash">100000</span><br>
+  <div id="holdings"></div>
+  <div class="result" id="portfolioValue"></div>
+  <hr>
+  <button onclick="analyzeRisk(state)">Analyze Risk</button>
+  <p>Risk Score: <span id="riskScore">--</span></p>
+  <ul id="riskTips"></ul>
+  <p style="color:gray; font-size:12px;">*This is educational only. You cannot trade from here.*</p>
+</div>
+
+<a class="back" href="features.html">← Back to Features</a>
+
+<script>
+  // Company prices (same as AI Advisor)
+  const COMPANIES = {
+    INFY: 1500,
+    TCS: 3000,
+    HDFCB: 1600,
+    RELI: 2500
+  };
+
+  // Simulated user portfolio (this can be synced or fetched from main app if available)
+  let state = {
+    cash: 100000,
+    holdings: {
+      INFY: 10,
+      TCS: 5,
+      HDFCB: 8,
+      RELI: 12
+    }
+  };
+
+  function updateHoldings(){
+    const div = document.getElementById("holdings");
+    div.innerHTML = '';
+    let totalVal = state.cash;
+    for(const c in state.holdings){
+      if(state.holdings[c]>0){
+        div.innerHTML += `${c}: ${state.holdings[c]} shares (₹${state.holdings[c]*COMPANIES[c]})<br>`;
+        totalVal += state.holdings[c]*COMPANIES[c];
+      }
+    }
+    document.getElementById("cash").innerText = state.cash;
+    document.getElementById("portfolioValue").innerText = `Total Portfolio Value: ₹${totalVal}`;
+  }
+
+  function analyzeRisk(portfolio){
+    let totalVal = portfolio.cash;
+    let maxExposure = 0;
+    const tips = [];
+
+    for(const c in portfolio.holdings){
+      totalVal += portfolio.holdings[c]*COMPANIES[c];
+      if(portfolio.holdings[c]*COMPANIES[c] > maxExposure){
+        maxExposure = portfolio.holdings[c]*COMPANIES[c];
+      }
+    }
+
+    const riskPercent = (maxExposure/totalVal)*100;
+    let riskScore = '';
+    if(riskPercent<30) riskScore='Low';
+    else if(riskPercent<60) riskScore='Medium';
+    else riskScore='High';
+
+    if(riskPercent>50) tips.push("High exposure in one stock — consider diversifying.");
+    if(portfolio.cash/totalVal<0.1) tips.push("Low cash allocation — maintain some liquidity.");
+    if(Object.keys(portfolio.holdings).length < 3) tips.push("Portfolio not diversified enough.");
+
+    document.getElementById("riskScore").innerText = riskScore;
+    const tipsEl = document.getElementById("riskTips");
+    tipsEl.innerHTML = '';
+    tips.forEach(tip=>{
+      const li = document.createElement('li');
+      li.innerText = tip;
+      tipsEl.appendChild(li);
+    });
+  }
+
+  updateHoldings();
+</script>
+</body>
+</html>

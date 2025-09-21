@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PaisaBuddy — Play with AI</title>
+  <style>
+    :root { --bg:#f5f7fb; --card:#fff; --accent:#0ea5a4; --muted:#667085; --danger:#ef4444; }
+    body { margin:0; font-family:Inter, system-ui, sans-serif; background:var(--bg); color:#071033; }
+    header { background:linear-gradient(90deg,#062a2a,#0f4860); color:#fff; padding:18px 24px; display:flex; justify-content:space-between; align-items:center; }
+    main { max-width:1100px; margin:20px auto; padding:0 18px; display:grid; grid-template-columns:1fr 360px; gap:18px; }
+    .card { background:var(--card); border-radius:12px; padding:14px; box-shadow:0 6px 20px rgba(8,16,32,0.06); }
+    .btn { background:var(--accent); color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(14,165,164,0.3); }
+    .company { display:flex; justify-content:space-between; padding:10px; border-radius:10px; background:#fff; margin-bottom:8px; }
+    .chip { width:40px; height:40px; border-radius:8px; background:#dff3f2; display:flex; align-items:center; justify-content:center; font-weight:700; color:#054b48; }
+    input[type=number]{ width:70px; padding:6px; border-radius:6px; border:1px solid #ccc; }
+    .result { margin-top:10px; padding:12px; border-radius:8px; font-weight:700; text-align:center; }
+    .winner { background:#dcfce7; color:#065f46; }
+    .loser { background:#ffe4e6; color:#9f1239; }
+    @media (max-width:900px){ main{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PaisaBuddy — Play with AI</h1>
+    <div>
+      <button class="btn ghost" onclick="location.href='features.html'">Back</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Companies -->
+    <div class="card">
+      <div style="margin-bottom:12px;">
+        <button class="btn" id="startBtn">Start Round</button>
+        <button class="btn ghost" id="resetBtn">Reset</button>
+        <span style="margin-left:15px;">Timer: <b id="timer">0</b>s</span>
+      </div>
+      <div id="companies"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="card">
+      <div><b>Your Cash:</b> ₹<span id="playerCash">100000</span></div>
+      <div><b>AI Cash:</b> ₹<span id="aiCash">100000</span></div>
+      <hr>
+      <div><b>Your Portfolio</b>
+        <div id="playerPortfolio"></div>
+        Total: ₹<span id="playerTotal">0</span>
+      </div>
+      <hr>
+      <div><b>AI Portfolio</b>
+        <div id="aiPortfolio"></div>
+        Total: ₹<span id="aiTotal">0</span>
+      </div>
+      <div id="resultBox" class="result" style="display:none"></div>
+    </aside>
+  </main>
+
+<script>
+const STARTING_CASH = 100000, ROUND_SECONDS = 45, AI_INTERVAL = 5;
+const COMPANIES = [
+  { symbol:'INFY', name:'Infosys' },
+  { symbol:'TCS', name:'Tata Consultancy' },
+  { symbol:'HDFC', name:'HDFC Bank' },
+  { symbol:'RELI', name:'Reliance' },
+  { symbol:'ITC', name:'ITC' }
+];
+
+let state = {};
+let timerId=null, aiId=null;
+
+/* ---------- Helpers ---------- */
+function format(n){ return Math.round(n).toLocaleString('en-IN'); }
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+/* ---------- Init Game ---------- */
+function init(){
+  state = {
+    playerCash: STARTING_CASH,
+    aiCash: STARTING_CASH,
+    holdings: {player:{}, ai:{}},
+    prices:{},
+    timer: ROUND_SECONDS,
+    active:false
+  };
+  COMPANIES.forEach(c=>{
+    state.prices[c.symbol]=rnd(100,2000);
+    state.holdings.player[c.symbol]=0;
+    state.holdings.ai[c.symbol]=0;
+  });
+  renderCompanies();
+  updateUI();
+}
+
+/* ---------- Render Companies ---------- */
+function renderCompanies(){
+  let html="";
+  COMPANIES.forEach(c=>{
+    html+=`
+      <div class="company">
+        <div><div class="chip">${c.symbol}</div> ${c.name} — ₹<span id="price-${c.symbol}">${format(state.prices[c.symbol])}</span></div>
+        <div>
+          <input type="number" id="qty-${c.symbol}" min="1" placeholder="Qty">
+          <button class="btn" onclick="buy('${c.symbol}')">Buy</button>
+          <div style="font-size:12px">You: <span id="you-${c.symbol}">0</span> | AI: <span id="ai-${c.symbol}">0</span></div>
+        </div>
+      </div>`;
+  });
+  document.getElementById("companies").innerHTML=html;
+}
+
+/* ---------- Buy ---------- */
+function buy(sym){
+  if(!state.active) return alert("Start round first!");
+  const qty=parseInt(document.getElementById("qty-"+sym).value);
+  if(!qty||qty<=0) return;
+  const cost=qty*state.prices[sym];
+  if(cost>state.playerCash) return alert("Not enough cash!");
+  state.playerCash-=cost;
+  state.holdings.player[sym]+=qty;
+  updateUI();
+}
+
+/* ---------- AI ---------- */
+function aiMove(){
+  COMPANIES.forEach(c=>{
+    if(Math.random()<0.3){ // 30% chance AI buys
+      const price=state.prices[c.symbol];
+      const maxQty=Math.floor(state.aiCash/price);
+      if(maxQty>0){
+        const qty=rnd(1,Math.min(5,maxQty));
+        state.aiCash-=qty*price;
+        state.holdings.ai[c.symbol]+=qty;
+      }
+    }
+  });
+  updateUI();
+}
+
+/* ---------- Price Update ---------- */
+function priceTick(){
+  COMPANIES.forEach(c=>{
+    let change=(Math.random()*0.04-0.02); // -2% to +2%
+    state.prices[c.symbol]=Math.max(10, Math.round(state.prices[c.symbol]*(1+change)));
+    document.getElementById("price-"+c.symbol).innerText=format(state.prices[c.symbol]);
+  });
+}
+
+/* ---------- Update UI ---------- */
+function updateUI(){
+  document.getElementById("playerCash").innerText=format(state.playerCash);
+  document.getElementById("aiCash").innerText=format(state.aiCash);
+
+  let pVal=state.playerCash, aVal=state.aiCash;
+  let pPort="", aPort="";
+  COMPANIES.forEach(c=>{
+    const pQty=state.holdings.player[c.symbol], aQty=state.holdings.ai[c.symbol];
+    document.getElementById("you-"+c.symbol).innerText=pQty;
+    document.getElementById("ai-"+c.symbol).innerText=aQty;
+    if(pQty>0){ let val=pQty*state.prices[c.symbol]; pVal+=val; pPort+=`${c.symbol}×${pQty} (₹${format(val)})<br>`; }
+    if(aQty>0){ let val=aQty*state.prices[c.symbol]; aVal+=val; aPort+=`${c.symbol}×${aQty} (₹${format(val)})<br>`; }
+  });
+  document.getElementById("playerPortfolio").innerHTML=pPort||"—";
+  document.getElementById("aiPortfolio").innerHTML=aPort||"—";
+  document.getElementById("playerTotal").innerText=format(pVal);
+  document.getElementById("aiTotal").innerText=format(aVal);
+}
+
+/* ---------- Round Control ---------- */
+function startRound(){
+  if(state.active) return;
+  state.active=true;
+  state.timer=ROUND_SECONDS;
+  document.getElementById("resultBox").style.display="none";
+  updateUI();
+
+  timerId=setInterval(()=>{
+    state.timer--; 
+    document.getElementById("timer").innerText=state.timer;
+    priceTick(); updateUI();
+    if(state.timer<=0) endRound();
+  },1000);
+
+  aiId=setInterval(()=>{ aiMove(); },AI_INTERVAL*1000);
+}
+
+function endRound(){
+  clearInterval(timerId); clearInterval(aiId);
+  state.active=false;
+  updateUI();
+  const pTot=parseInt(document.getElementById("playerTotal").innerText.replace(/,/g,""));
+  const aTot=parseInt(document.getElementById("aiTotal").innerText.replace(/,/g,""));
+  const box=document.getElementById("resultBox");
+  box.style.display="block";
+  if(pTot>aTot){ box.className="result winner"; box.innerText=`You win! ₹${format(pTot)} vs AI ₹${format(aTot)}`; }
+  else if(aTot>pTot){ box.className="result loser"; box.innerText=`AI wins! ₹${format(aTot)} vs You ₹${format(pTot)}`; }
+  else { box.className="result"; box.innerText="It's a tie!"; }
+}
+
+function resetGame(){ clearInterval(timerId); clearInterval(aiId); init(); document.getElementById("timer").innerText=0; document.getElementById("resultBox").style.display="none"; }
+
+/* ---------- Setup ---------- */
+document.getElementById("startBtn").onclick=startRound;
+document.getElementById("resetBtn").onclick=resetGame;
+init();
+</script>
+</body>
+</html>

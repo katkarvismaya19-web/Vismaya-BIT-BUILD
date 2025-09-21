@@ -1,238 +1,193 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Features - Paisabuddy</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PaisaBuddy — Features</title>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    background: linear-gradient(135deg, #d0eaff, #fff7d6, #ffd6e0, #e0c3fc);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    color: #004aad;
-}
+  body {
+    margin:0; font-family: 'Inter', sans-serif;
+    background:linear-gradient(135deg,#e0f7fa,#fdfbfb);
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; padding:40px 20px;
+  }
 
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+  h1 {
+    font-size:2.5rem;
+    margin-bottom:10px;
 
-/* Navbar */
-nav {
-    backdrop-filter: blur(12px);
-    background: rgba(255,255,255,0.2);
-    border-radius: 15px;
-    padding: 12px 20px;
-    margin: 15px;
-    display: inline-block;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
+    /* Fallback color */
+    color:#0ea5a4;
 
-nav a {
-    margin: 0 15px;
-    text-decoration: none;
-    color: #004aad;
-    font-weight: 600;
-    transition: 0.3s;
-}
+    /* Gradient text */
+    background: linear-gradient(90deg,#0ea5a4,#2563eb);
+    background-clip: text;
+    -webkit-background-clip: text;      
+    color: transparent;
+    -webkit-text-fill-color: transparent; 
+  }
 
-nav a:hover {
-    color: #ff9900;
-    transform: scale(1.15);
-}
+  .search-box { margin-bottom:25px; width:100%; max-width:600px; position:relative; }
+  .search-box input {
+    width:100%; padding:12px 40px; border-radius:12px; border:none;
+    font-size:16px; box-shadow:0 4px 16px rgba(0,0,0,0.08);
+  }
+  .search-box svg {
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    color:#64748b;
+  }
 
-/* Features Section */
-.features-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
-    margin: 60px auto;
-    padding: 0 20px;
-}
+  .grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px; width:100%; max-width:1100px;
+  }
 
-/* Feature Card */
-.feature-card {
-    background: rgba(255,255,255,0.25);
-    backdrop-filter: blur(15px);
-    border-radius: 25px;
-    padding: 25px 20px;
-    text-align: center;
-    color: #004aad;
-    cursor: pointer;
-    transition: transform 0.4s, box-shadow 0.4s;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-}
+  .card {
+    background:rgba(255,255,255,0.7); border-radius:18px;
+    padding:22px; backdrop-filter:blur(10px);
+    box-shadow:0 8px 24px rgba(0,0,0,0.08); 
+    transition:all 0.3s ease; cursor:pointer; position:relative;
+    opacity:0; transform:scale(0.95); animation:fadeIn 0.5s forwards;
+  }
+  .card:hover { transform:translateY(-8px) scale(1.02); box-shadow:0 12px 32px rgba(14,165,164,0.25); }
+  .card h3 { margin:10px 0 8px; font-size:18px; color:#081129; }
+  .card p { margin:0 0 14px; color:#475569; font-size:14px; line-height:1.4; }
 
-.feature-card:hover {
-    transform: translateY(-10px) scale(1.05);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-}
+  .btn {
+    display:inline-flex; align-items:center; gap:6px;
+    text-decoration:none; padding:8px 14px; border-radius:10px;
+    background:#0ea5a4; color:#fff; font-weight:600; font-size:14px;
+    transition:background 0.3s;
+  }
+  .btn:hover { background:#089c9b; }
 
-/* Card icons */
-.feature-card img {
-    width: 70px;
-    margin-bottom: 15px;
-    animation: floatIcon 3s ease-in-out infinite alternate;
-}
+  .icon {
+    width:28px; height:28px; background:#e0f2fe; color:#2563eb;
+    border-radius:8px; display:flex; align-items:center; justify-content:center;
+  }
 
-@keyframes floatIcon {
-    0% { transform: translateY(0);}
-    50% { transform: translateY(-10px);}
-    100% { transform: translateY(0);}
-}
-
-/* Card Titles & Description */
-.feature-card h3 {
-    font-size: 1.4rem;
-    margin-bottom: 10px;
-}
-
-.feature-card p {
-    font-size: 1rem;
-    margin-bottom: 15px;
-}
-
-/* Buttons */
-.feature-card .btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    background: #0077ff;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
-    text-decoration: none;
-}
-
-.feature-card .btn:hover {
-    background: #005bb5;
-}
-
-/* Floating shapes */
-.shape {
-    position: absolute;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    width: 50px;
-    height: 50px;
-    animation: floatShape 10s ease-in-out infinite alternate;
-    z-index: 0;
-}
-
-.shape:nth-child(1) { top: 15%; left: 5%; }
-.shape:nth-child(2) { top: 70%; left: 15%; }
-.shape:nth-child(3) { top: 35%; left: 80%; }
-
-@keyframes floatShape {
-    0% { transform: translateY(0) rotate(0deg);}
-    50% { transform: translateY(-20px) rotate(45deg);}
-    100% { transform: translateY(0) rotate(90deg);}
-}
-
-/* Footer */
-footer {
-    text-align: center;
-    padding: 25px;
-    color: #004aad;
-    margin-top: 50px;
-    backdrop-filter: blur(12px);
-    background: rgba(255,255,255,0.15);
-    border-radius: 25px 25px 0 0;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-}
+  @keyframes fadeIn { to { opacity:1; transform:scale(1); } }
+  
+  /* Navigation Styles */
+  nav a:hover {
+    background-color: rgba(14, 165, 164, 0.1) !important;
+    color: #0ea5a4 !important;
+    transform: translateY(-1px);
+  }
+  
+  nav a[href="login.html"]:hover {
+    background-color: #089c9b !important;
+    color: white !important;
+  }
 </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<nav>
-  <a href="index.html">Home</a> |
-  <a href="features.html">Features</a> |
-  <a href="portfolio.html">Trading</a> |
-  <a href="dashboard.html">Dashboard</a> |
-  <a href="Register.html">Register</a> |
-  <a href="login.html">Login</a>
+<!-- Navigation Header -->
+<nav style="width: 100%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 15px 25px; background: rgba(255,255,255,0.8); border-radius: 15px; backdrop-filter: blur(10px); box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <div style="width: 32px; height: 32px; background: #0ea5a4; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">P</div>
+    <span style="font-weight: 600; color: #081129; font-size: 18px;">PaisaBuddy</span>
+  </div>
+  <div style="display: flex; gap: 15px; align-items: center;">
+    <a href="index.html" style="text-decoration: none; color: #475569; font-weight: 500; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 4px;">🏠 Home</a>
+    <a href="portfolio.html" style="text-decoration: none; color: #475569; font-weight: 500; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 4px;">📊 Trading</a>
+    <a href="dashboard.html" style="text-decoration: none; color: #475569; font-weight: 500; padding: 6px 12px; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 4px;">📈 Dashboard</a>
+    <a href="login.html" style="text-decoration: none; background: #0ea5a4; color: white; font-weight: 500; padding: 8px 16px; border-radius: 10px; transition: all 0.2s;">Login</a>
+  </div>
 </nav>
 
-<!-- Floating background shapes -->
-<div class="shape"></div>
-<div class="shape"></div>
-<div class="shape"></div>
+<h1>✨ Features</h1>
 
-<!-- Features Section -->
-<div class="features-section">
-
-    <div class="feature-card" onclick="navigateToPage('dashboard.html')" style="border: 3px solid #10b981; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(37, 99, 235, 0.1));">
-        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170576.png" alt="Dashboard">
-        <h3>🚀 Enhanced Trading Dashboard</h3>
-        <p>🤖 AI-powered insights with social features, achievements, and advanced analytics!</p>
-        <a class="btn" href="dashboard.html" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 1.1rem; padding: 12px 24px;">🌟 Try Dashboard</a>
-    </div>
-
-    <div class="feature-card" onclick="navigateToPage('portfolio.html')">
-        <img src="https://cdn-icons-png.flaticon.com/512/1170/1170576.png" alt="Trading">
-        <h3>📈 Virtual Trading</h3>
-        <p>Practice risk-free investing and trading with real-time data simulation.</p>
-        <a class="btn" href="portfolio.html">Start Trading</a>
-    </div>
-
-    <div class="feature-card" onclick="navigateToPage('gamified-learning.html')">
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Learning">
-        <h3>🎓 Gamified Learning</h3>
-        <p>Interactive quizzes, badges, and points to track progress.</p>
-        <a class="btn" href="gamified-learning.html">Start Learning</a>
-    </div>
-
-    <div class="feature-card" onclick="navigateToPage('budget-tracker.html')">
-        <img src="https://cdn-icons-png.flaticon.com/512/3580/3580242.png" alt="Budget">
-        <h3>💰 Budget Tracker</h3>
-        <p>Track expenses, set goals, and save smarter with AI tips.</p>
-        <a class="btn" href="budget-tracker.html">Track Budget</a>
-    </div>
-
-    <div class="feature-card" onclick="navigateToPage('fraud-challenges.html')">
-        <img src="https://cdn-icons-png.flaticon.com/512/2913/2913465.png" alt="Fraud">
-        <h3>🕵️ Fraud Challenges</h3>
-        <p>Play challenges to learn how to spot scams & phishing attacks.</p>
-        <a class="btn" href="fraud-challenges.html">Take Challenge</a>
-    </div>
-
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="Search a feature...">
+  <svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-search" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
 </div>
 
-<footer>
-    © 2025 Paisabuddy | Empowering Young India with Financial Literacy 💡
-</footer>
+<div class="grid" id="featureGrid">
+  <div class="card" data-title="Virtual Trading Simulator">
+    <div class="icon"><i data-lucide="bar-chart-3"></i></div>
+    <h3>Virtual Trading Simulator</h3>
+    <p>Practice stock trading with paper money using real-like simulated prices.</p>
+    <a class="btn" href="portfolio.html"><i data-lucide="play"></i> Start Trading</a>
+  </div>
+
+  <div class="card" data-title="Trading Dashboard">
+    <div class="icon"><i data-lucide="pie-chart"></i></div>
+    <h3>Trading Dashboard</h3>
+    <p>View comprehensive analytics, transaction history, and performance insights.</p>
+    <a class="btn" href="dashboard.html"><i data-lucide="trending-up"></i> View Dashboard</a>
+  </div>
+
+  <div class="card" data-title="Games for Learning">
+    <div class="icon"><i data-lucide="gamepad-2"></i></div>
+    <h3>Games for Learning</h3>
+    <p>Interactive mini-games to learn trading, finance, and risk management.</p>
+    <a class="btn" href="gamified-learning.html"><i data-lucide="play-circle"></i> Play Games</a>
+  </div>
+
+  <div class="card" data-title="Fraud Detection Test">
+    <div class="icon"><i data-lucide="shield-check"></i></div>
+    <h3>Fraud Detection Test</h3>
+    <p>Test your skills in spotting suspicious transactions and fraudulent activities.</p>
+    <a class="btn" href="fraud-challenges.html"><i data-lucide="alert-triangle"></i> Take Test</a>
+  </div>
+
+  <div class="card" data-title="Play with AI">
+    <div class="icon"><i data-lucide="cpu"></i></div>
+    <h3>Play with AI</h3>
+    <p>Compete head-to-head with AI — both get cash & companies. Buy, wait, and see who wins.</p>
+    <a class="btn" href="play_with_ai.html"><i data-lucide="zap"></i> Play Now</a>
+  </div>
+
+  <div class="card" data-title="AI-Powered Investment Advisor">
+    <div class="icon"><i data-lucide="cpu"></i></div>
+    <h3>AI-Powered Investment Advisor</h3>
+    <p>Get personalized trading suggestions with AI. Learn strategies, risk management, and optimize your portfolio while practicing.</p>
+    <a class="btn" href="ai_advisor.html"><i data-lucide="zap"></i> Try Now</a>
+  </div>
+
+  <div class="card" data-title="Risk Profiler">
+    <div class="icon"><i data-lucide="target"></i></div>
+    <h3>Risk Profiler</h3>
+    <p>Assess your risk tolerance and get personalized investment recommendations based on your profile.</p>
+    <a class="btn" href="risk_profiler.html"><i data-lucide="assessment"></i> Take Assessment</a>
+  </div>
+
+  <div class="card" data-title="Budget Tracker">
+    <div class="icon"><i data-lucide="calculator"></i></div>
+    <h3>Budget Tracker</h3>
+    <p>Track your expenses, set budgets, and manage your personal finances effectively.</p>
+    <a class="btn" href="budget-tracker.html"><i data-lucide="dollar-sign"></i> Track Budget</a>
+  </div>
+
+  <div class="card" data-title="User Registration">
+    <div class="icon"><i data-lucide="user-plus"></i></div>
+    <h3>Join PaisaBuddy</h3>
+    <p>Create your account to access all features and start your financial learning journey.</p>
+    <a class="btn" href="Register.html"><i data-lucide="user-check"></i> Sign Up</a>
+  </div>
+
+  <div class="card" data-title="Login to Account">
+    <div class="icon"><i data-lucide="log-in"></i></div>
+    <h3>Login to Account</h3>
+    <p>Access your existing account to continue your trading and learning experience.</p>
+    <a class="btn" href="login.html"><i data-lucide="unlock"></i> Login</a>
+  </div>
+</div>
 
 <script>
-// Navigation function with error handling
-function navigateToPage(url) {
-    try {
-        console.log('Navigating to:', url);
-        // Use window.location.href instead of window.location for better compatibility
-        window.location.href = url;
-    } catch (error) {
-        console.error('Navigation error:', error);
-        // Fallback: try opening in new window if direct navigation fails
-        window.open(url, '_self');
-    }
-}
-
-// Prevent event bubbling on button clicks
-document.addEventListener('DOMContentLoaded', function() {
-    const buttons = document.querySelectorAll('.feature-card .btn');
-    buttons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation(); // Prevent card click when button is clicked
-        });
+  lucide.createIcons();
+  const searchInput = document.getElementById("searchInput");
+  const cards = document.querySelectorAll(".card");
+  searchInput.addEventListener("input", () => {
+    const q = searchInput.value.toLowerCase();
+    cards.forEach(card=>{
+      const title = card.dataset.title.toLowerCase();
+      card.style.display = title.includes(q) ? "block":"none";
     });
-});
+  });
 </script>
-
 </body>
 </html>

@@ -76,35 +76,32 @@
       margin-bottom: 15px;
     }
 
-    /* Trading Mode Selector */
-    .mode-selector {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin: 30px 0;
-      flex-wrap: wrap;
-    }
-
-    .mode-btn {
-      padding: 15px 25px;
-      border: 2px solid #e5e7eb;
-      border-radius: 20px;
-      background: white;
-      color: #6b7280;
+    /* Dashboard Action Buttons */
+    .btn-modal {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 15px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      min-width: 200px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .mode-btn.active {
+    .btn-confirm {
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
       color: white;
-      border-color: #2563eb;
-      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
     }
 
-    .mode-btn:hover {
+    .btn-cancel {
+      background: rgba(255, 255, 255, 0.8);
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+    }
+
+    .btn-modal:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
     }
@@ -634,16 +631,6 @@
         font-size: 2.2rem;
       }
       
-      .mode-selector {
-        flex-direction: column;
-        align-items: center;
-      }
-      
-      .mode-btn {
-        width: 100%;
-        max-width: 300px;
-      }
-      
       .analytics-section {
         margin: 30px 15px;
       }
@@ -756,26 +743,15 @@
 
   <!-- Header -->
   <div class="portfolio-header">
-    <h1><i class="fas fa-chart-pie"></i> Enhanced Trading Dashboard</h1>
-    <p>Advanced trading simulation with AI insights, social community, and comprehensive analytics</p>
+    <h1><i class="fas fa-chart-pie"></i> Trading Analytics Dashboard</h1>
+    <p>Comprehensive transaction analysis, performance metrics, and portfolio insights</p>
     
-    <!-- Trading Mode Selector -->
-    <div class="mode-selector">
-      <button class="mode-btn active" data-mode="intraday" onclick="selectTradingMode('intraday')">
-        <i class="fas fa-clock"></i> Intraday Trading
-        <br><small>Real-time market simulation</small>
-      </button>
-      <button class="mode-btn" data-mode="longterm" onclick="selectTradingMode('longterm')">
-        <i class="fas fa-calendar-alt"></i> Long-term Investment
-        <br><small>Historical data simulation</small>
-      </button>
-    </div>
-    
-    <div style="margin-top: 20px;">
-      <button onclick="createNewSimulation()" class="btn-modal btn-confirm">
-        <i class="fas fa-plus"></i> Create New Simulation
-      </button>
-      <button onclick="refreshAllData()" class="btn-modal btn-cancel" style="margin-left: 10px;">
+    <!-- Navigation to Trading -->
+    <div style="margin-top: 25px;">
+      <a href="portfolio.html" class="btn-modal btn-confirm" style="text-decoration: none; display: inline-block;">
+        <i class="fas fa-briefcase"></i> Go to Portfolio & Trading
+      </a>
+      <button onclick="refreshAllData()" class="btn-modal btn-cancel" style="margin-left: 15px;">
         <i class="fas fa-sync-alt"></i> Refresh Data
       </button>
     </div>
@@ -913,42 +889,7 @@
 
   </div>
 
-  <!-- Create Simulation Modal -->
-  <div class="modal" id="create-simulation-modal">
-    <div class="modal-content">
-      <h3><i class="fas fa-plus"></i> Create New Simulation</h3>
-      <form id="create-simulation-form">
-        <div class="form-group">
-          <label for="simulation-name">Simulation Name</label>
-          <input type="text" id="simulation-name" placeholder="My Trading Strategy" required>
-        </div>
-        <div class="form-group">
-          <label for="simulation-type">Simulation Type</label>
-          <select id="simulation-type" required>
-            <option value="intraday">Intraday Trading</option>
-            <option value="longterm">Long-term Investment</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="start-year">Start Year (Long-term only)</label>
-          <select id="start-year">
-            <option value="2020">2020</option>
-            <option value="2021">2021</option>
-            <option value="2022">2022</option>
-            <option value="2023">2023</option>
-          </select>
-        </div>
-        <div class="modal-buttons">
-          <button type="button" class="btn-modal btn-cancel" onclick="closeCreateSimulationModal()">
-            <i class="fas fa-times"></i> Cancel
-          </button>
-          <button type="submit" class="btn-modal btn-confirm">
-            <i class="fas fa-check"></i> Create Simulation
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <!-- Note: Simulation creation moved to portfolio.html -->
 
   <!-- Trade Modal -->
   <div class="modal" id="trade-modal">

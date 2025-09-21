@@ -767,7 +767,7 @@
           <span class="skill-tag">Income Planning</span>
           <span class="skill-tag">Budget Balancing</span>
         </div>
-        <button class="game-launch-btn" onclick="window.location.href='budget-tracker.html'">
+        <button class="game-launch-btn" onclick="launchPygameGame('budget_balance')">
           <i class="fas fa-play"></i> Play Budget Game
         </button>
       </div>
@@ -781,7 +781,7 @@
           <span class="skill-tag">Risk Assessment</span>
           <span class="skill-tag">Portfolio Management</span>
         </div>
-        <button class="game-launch-btn" onclick="window.location.href='portfolio.html'">
+        <button class="game-launch-btn" onclick="launchPygameGame('investment_growth')">
           <i class="fas fa-play"></i> Play Investment Game
         </button>
       </div>
@@ -795,13 +795,29 @@
           <span class="skill-tag">Security Awareness</span>
           <span class="skill-tag">Risk Recognition</span>
         </div>
-        <button class="game-launch-btn" onclick="window.location.href='fraud-challenges.html'">
+        <button class="game-launch-btn" onclick="launchPygameGame('fraud_detection')">
           <i class="fas fa-play"></i> Play Fraud Game
         </button>
       </div>
     </div>
 
+    <!-- Installation Status Notice -->
+    <div class="installation-notice" id="installation-status" style="display: none;">
+      <h4><i class="fas fa-info-circle"></i> Game Installation Status</h4>
+      <p id="installation-message">Checking pygame installation...</p>
+    </div>
+
     <div class="launcher-section">
+      <div class="launcher-card" style="margin-bottom: 30px;">
+        <h3><i class="fas fa-gamepad"></i> Unified Game Launcher</h3>
+        <p>Launch the pygame-powered game launcher with all games, progress tracking, and achievements in one interface!</p>
+        <button class="main-launcher-btn" onclick="launchPygameGame('game_launcher')" style="margin-bottom: 15px;">
+          <i class="fas fa-rocket"></i> Launch All Games
+        </button>
+        <div style="font-size: 0.9rem; color: rgba(255,255,255,0.8);">
+          🎮 Includes: Budget Balance • Investment Garden • Fraud Detective
+        </div>
+      </div>
       <div class="launcher-card">
         <h3><i class="fas fa-chart-area"></i> Progress Dashboard</h3>
         <p>View your comprehensive learning progress, achievements, and detailed statistics in our enhanced dashboard.</p>
@@ -1170,20 +1186,175 @@
       location.reload();
     }
 
-    // Simplified game launch - redirects to web-based modules
-    function launchGame(gameType) {
-      const gameUrls = {
-        'budget_balance': 'budget-tracker.html',
-        'investment_growth': 'portfolio.html',
-        'fraud_detection': 'fraud-challenges.html'
-      };
-
-      const url = gameUrls[gameType];
-      if (url) {
-        window.location.href = url;
-      } else {
-        alert('Game not available yet. Please try the web-based modules!');
+    // Launch pygame games via API
+    async function launchPygameGame(gameName) {
+      try {
+        // Show loading indicator
+        showGameLaunchStatus('🚀 Launching ' + gameName.replace('_', ' ') + '...', 'loading');
+        
+        const response = await fetch('http://localhost:8000/api/games/launch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            game_name: gameName,
+            username: 'demo_user'
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          showGameLaunchStatus(
+            `🎮 ${result.game_name} launched successfully!\n\n` +
+            result.instructions.join('\n'),
+            'success'
+          );
+          console.log('✅ Game launched:', result);
+        } else {
+          showGameLaunchStatus(
+            `❌ Failed to launch game: ${result.message}\n\n` +
+            'Troubleshooting tips:\n' +
+            (result.troubleshooting || ['Check console for details']).join('\n'),
+            'error'
+          );
+          console.error('❌ Game launch failed:', result);
+        }
+        
+      } catch (error) {
+        console.error('❌ Game launch error:', error);
+        showGameLaunchStatus(
+          `❌ Connection error: ${error.message}\n\n` +
+          'Make sure the backend server is running on port 8000:\n' +
+          'cd backend && python main.py',
+          'error'
+        );
       }
+    }
+    
+    function showGameLaunchStatus(message, type) {
+      // Create modal for game launch status
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+      `;
+      
+      const statusBox = document.createElement('div');
+      const bgColor = type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#2563eb';
+      statusBox.style.cssText = `
+        background: ${bgColor};
+        color: white;
+        padding: 30px 40px;
+        border-radius: 20px;
+        max-width: 500px;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        font-family: 'Inter', sans-serif;
+        line-height: 1.6;
+        white-space: pre-line;
+      `;
+      
+      statusBox.innerHTML = `
+        <div style="font-size: 1.2rem; margin-bottom: 20px;">${message}</div>
+        <button onclick="this.parentElement.parentElement.remove()" 
+                style="background: rgba(255,255,255,0.2); color: white; border: none; 
+                       padding: 10px 20px; border-radius: 15px; cursor: pointer; 
+                       font-weight: 600; margin-top: 15px;">
+          Close
+        </button>
+      `;
+      
+      modal.appendChild(statusBox);
+      document.body.appendChild(modal);
+      
+      // Auto-close success messages after 5 seconds
+      if (type === 'success') {
+        setTimeout(() => {
+          if (document.body.contains(modal)) {
+            modal.remove();
+          }
+        }, 5000);
+      }
+      
+      // Close on background click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+    
+    // Load available games on page load
+    async function loadAvailableGames() {
+      const statusDiv = document.getElementById('installation-status');
+      const messageDiv = document.getElementById('installation-message');
+      
+      try {
+        const response = await fetch('http://localhost:8000/api/games/available');
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          console.log('🎮 Available games:', result.available_games);
+          
+          // Update game cards based on availability
+          result.available_games.forEach(game => {
+            updateGameCardAvailability(game.id, true);
+          });
+          
+          result.missing_games.forEach(game => {
+            updateGameCardAvailability(game.id, false);
+          });
+          
+          // Show installation status
+          if (result.available_count > 0) {
+            console.log(`✅ Found ${result.available_count} pygame games ready to launch!`);
+            if (result.available_count === result.total_games) {
+              messageDiv.innerHTML = `✅ All ${result.total_games} pygame games are installed and ready! Click any "Play" button to launch.`;
+              statusDiv.style.background = 'linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)';
+              statusDiv.style.borderColor = '#28a745';
+              messageDiv.style.color = '#155724';
+            } else {
+              messageDiv.innerHTML = `⚠️ ${result.available_count}/${result.total_games} games available. Some game files may be missing.`;
+              statusDiv.style.background = 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)';
+              statusDiv.style.borderColor = '#ffc107';
+              messageDiv.style.color = '#856404';
+            }
+            statusDiv.style.display = 'block';
+          } else {
+            console.warn('⚠️ No pygame games found. Check the games/ directory.');
+            messageDiv.innerHTML = `❌ No pygame games found. Please ensure game files are in the games/ directory and install pygame: <code>pip install pygame</code>`;
+            statusDiv.style.background = 'linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)';
+            statusDiv.style.borderColor = '#dc3545';
+            messageDiv.style.color = '#721c24';
+            statusDiv.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Could not check game availability:', error.message);
+        messageDiv.innerHTML = `⚠️ Could not connect to game server. Make sure the backend is running on port 8000.`;
+        statusDiv.style.background = 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)';
+        statusDiv.style.borderColor = '#ffc107';
+        messageDiv.style.color = '#856404';
+        statusDiv.style.display = 'block';
+      }
+    }
+    
+    function updateGameCardAvailability(gameId, isAvailable) {
+      // This function could be expanded to visually indicate game availability
+      // For now, we'll just log the status
+      const status = isAvailable ? 'Available' : 'Missing';
+      console.log(`🎮 ${gameId}: ${status}`);
     }
 
     // Clean helper functions for the learning page
@@ -1194,6 +1365,7 @@
 
     // Initialize
     loadProgress();
+    loadAvailableGames();
   </script>
 </body>
 </html>

@@ -9,7 +9,7 @@ const ENHANCED_API = {
     social: `${API_BASE}/social`,
     achievements: `${API_BASE}/achievements`,
     analytics: `${API_BASE}/analytics`,
-    dashboard: `${API_BASE}/dashboard`,
+    dashboard: `${API_BASE}/api/dashboard`,  // Updated to use new API endpoint
     market: `${API_BASE}/market`,
     health: `${API_BASE}/health`
 };
@@ -96,23 +96,9 @@ async function logout() {
     }
 }
 
-// Trading Mode Selection
-function selectTradingMode(mode) {
-    currentTradingMode = mode;
-    
-    // Update UI
-    document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.mode === mode) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Update simulation type in modal
-    document.getElementById('simulation-type').value = mode;
-    
-    showToast(`Switched to ${mode === 'intraday' ? 'Intraday Trading' : 'Long-term Investment'} mode`, 'info');
-}
+// Dashboard Navigation Functions
+// Trading mode selection is now handled in portfolio.html
+// This dashboard focuses on analytics and transaction history
 
 // Enhanced API Functions
 
@@ -552,8 +538,9 @@ function initializePortfolioChart() {
 }
 
 // Modal Functions
-function createNewSimulation() {
-    document.getElementById('create-simulation-modal').classList.add('show');
+function goToPortfolio() {
+    // Redirect to portfolio page for trading
+    window.location.href = 'portfolio.html';
 }
 
 function closeCreateSimulationModal() {

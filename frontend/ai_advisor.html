@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Powered Investment Advisor</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fb;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:40px 20px;
+  }
+  h1 { color:#0ea5a4; margin-bottom:20px; text-align:center; }
+  .portfolio, .ai-suggestion {
+    background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom:20px; width:100%; max-width:500px;
+  }
+  input[type="number"] { width:60px; padding:6px; margin-left:6px; }
+  select { padding:6px; margin-right:6px; }
+  button {
+    background:#0ea5a4; color:#fff; border:none; padding:8px 14px; border-radius:8px;
+    cursor:pointer; font-weight:bold;
+  }
+  button:hover { background:#089c9b; }
+  .back { margin-top:10px; display:inline-block; text-decoration:none; color:#2563eb; }
+  .result { margin-top:10px; font-weight:bold; color:#2563eb; }
+  hr { margin:15px 0; border:none; border-top:1px solid #ddd; }
+</style>
+</head>
+<body>
+<h1>AI-Powered Investment Advisor</h1>
+
+<div class="portfolio">
+  <h3>Your Portfolio</h3>
+  Cash: ₹<span id="cash">100000</span><br>
+  <div id="holdings"></div>
+  <div class="result" id="portfolioValue"></div>
+  <hr>
+  <!-- Buy Section -->
+  <label>Buy Company:
+    <select id="companySelect">
+      <option value="INFY">Infosys</option>
+      <option value="TCS">TCS</option>
+      <option value="HDFCB">HDFC Bank</option>
+      <option value="RELI">Reliance</option>
+    </select>
+  </label>
+  <label>Qty: <input type="number" id="qtyInput" min="1" value="1"></label>
+  <button onclick="buyStock()">Buy</button>
+  <hr>
+  <!-- Sell Section -->
+  <label>Sell Company:
+    <select id="sellCompanySelect"></select>
+  </label>
+  <label>Qty: <input type="number" id="sellQtyInput" min="1" value="1"></label>
+  <button onclick="sellStock()">Sell</button>
+</div>
+
+<div class="ai-suggestion">
+  <h3>AI Suggestion</h3>
+  <button onclick="aiSuggest()">Get AI Suggestion</button>
+  <div class="result" id="aiResult"></div>
+</div>
+
+<a class="back" href="features.html">← Back to Features</a>
+
+<script>
+  const STARTING_CASH = 100000;
+  const COMPANIES = {
+    INFY: 1500,
+    TCS: 3000,
+    HDFCB: 1600,
+    RELI: 2500
+  };
+
+  let state = {
+    cash: STARTING_CASH,
+    holdings: {
+      INFY:0, TCS:0, HDFCB:0, RELI:0
+    }
+  };
+
+  // Update portfolio display
+  function updateHoldings(){
+    const div = document.getElementById("holdings");
+    div.innerHTML = '';
+    let totalVal = state.cash;
+    for(const c in state.holdings){
+      if(state.holdings[c]>0){
+        div.innerHTML += `${c}: ${state.holdings[c]} shares (₹${state.holdings[c]*COMPANIES[c]})<br>`;
+        totalVal += state.holdings[c]*COMPANIES[c];
+      }
+    }
+    document.getElementById("cash").innerText = state.cash;
+    document.getElementById("portfolioValue").innerText = `Total Portfolio Value: ₹${totalVal}`;
+    updateSellOptions();
+  }
+
+  // Buy stocks
+  function buyStock(){
+    const comp = document.getElementById("companySelect").value;
+    const qty = parseInt(document.getElementById("qtyInput").value);
+    const cost = qty*COMPANIES[comp];
+    if(cost > state.cash){
+      alert("Not enough cash!");
+      return;
+    }
+    state.cash -= cost;
+    state.holdings[comp] += qty;
+    updateHoldings();
+  }
+
+  // Update Sell dropdown dynamically
+  function updateSellOptions(){
+    const sellSelect = document.getElementById("sellCompanySelect");
+    sellSelect.innerHTML = ''; // Clear previous options
+
+    const ownedCompanies = Object.keys(state.holdings).filter(c => state.holdings[c] > 0);
+
+    ownedCompanies.forEach((c, index) => {
+      const option = document.createElement('option');
+      option.value = c;
+      option.text = c;
+      sellSelect.appendChild(option);
+      if(index === 0) sellSelect.value = c; // Select first owned company
+    });
+
+    if(ownedCompanies.length === 0){
+      const option = document.createElement('option');
+      option.value = '';
+      option.text = 'No shares to sell';
+      sellSelect.appendChild(option);
+    }
+  }
+
+  // Sell stocks
+  function sellStock(){
+    const comp = document.getElementById("sellCompanySelect").value;
+    const qty = parseInt(document.getElementById("sellQtyInput").value);
+    if(comp === '' || qty > state.holdings[comp]){
+      alert("Not enough shares to sell!");
+      return;
+    }
+    state.holdings[comp] -= qty;
+    state.cash += qty * COMPANIES[comp];
+    updateHoldings();
+  }
+
+  // AI suggestion
+  function aiSuggest(){
+    const ownedCompanies = Object.keys(state.holdings).filter(c => state.holdings[c]>0);
+    let action, comp, qty;
+
+    if(Math.random() < 0.5 && ownedCompanies.length>0){
+      action = 'Sell';
+      comp = ownedCompanies[Math.floor(Math.random()*ownedCompanies.length)];
+      qty = Math.min(Math.floor(Math.random()*5)+1, state.holdings[comp]);
+      if(qty === 0) action = 'Hold';
+    } else {
+      action = 'Buy';
+      const companies = Object.keys(COMPANIES);
+      comp = companies[Math.floor(Math.random()*companies.length)];
+      qty = Math.floor(Math.random()*5)+1;
+    }
+
+    let message = '';
+    if(action==='Buy'){
+      message = `AI Suggestion: ${action} ${qty} shares of ${comp} at ₹${COMPANIES[comp]} each`;
+    } else if(action==='Sell'){
+      message = `AI Suggestion: ${action} ${qty} shares of ${comp} at ₹${COMPANIES[comp]} each`;
+    } else {
+      message = `AI Suggestion: Hold ${comp} (no shares to sell)`;
+    }
+
+    document.getElementById("aiResult").innerText = message;
+  }
+
+  // Initial render
+  updateHoldings();
+</script>
+</body>
+</html>
