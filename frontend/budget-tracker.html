@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Tracker - Paisabuddy</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f7e6e4 0%, #f0d9d6 50%, #ead3cf 100%);
+      min-height: 100vh;
+      color: #4a4a4a;
+      line-height: 1.6;
+    }
+    
+    /* Navigation */
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      margin: 20px;
+      padding: 15px 30px;
+      box-shadow: 0 10px 40px rgba(206, 156, 148, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .navbar-brand {
+      color: #2563eb !important;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-decoration: none;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 30px;
+    }
+    
+    .nav-links a {
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+      color: #2563eb;
+      background: rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 30px 40px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 35px;
+      margin: 0 20px 40px;
+      box-shadow: 0 20px 60px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .header h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 15px;
+      letter-spacing: -0.5px;
+    }
+    
+    .header p {
+      font-size: 1.25rem;
+      color: #6b7280;
+      margin-bottom: 30px;
+      font-weight: 400;
+    }
+    
+    /* Summary Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin: 0 20px 50px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .summary-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      padding: 30px 25px;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-radius: 25px 25px 0 0;
+    }
+    
+    .summary-card.income::before {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    .summary-card.expense::before {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+    
+    .summary-card.savings::before {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    
+    .summary-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 25px 70px rgba(206, 156, 148, 0.15);
+    }
+    
+    .summary-card i {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: #2563eb;
+    }
+    
+    .summary-card.income i { color: #10b981; }
+    .summary-card.expense i { color: #ef4444; }
+    .summary-card.savings i { color: #8b5cf6; }
+    
+    .summary-card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .summary-card p {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0;
+    }
+    
+    /* Main Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin: 0 20px 50px;
+      max-width: 1400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* Add Transaction Form */
+    .form-section {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 60px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .form-section h2 {
+      font-size: 1.8rem;
+      color: #1f2937;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 15px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 15px;
+      background: #f9fafb;
+      color: #1f2937;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    
+    .form-group input:focus, .form-group select:focus {
+      border-color: #2563eb;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Buttons */
+    .btn {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(37, 99, 235, 0.3);
+    }
+    
+    .btn.income {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+    }
+    
+    .btn.income:hover {
+      box-shadow: 0 12px 35px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn.expense {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.2);
+    }
+    
+    .btn.expense:hover {
+      box-shadow: 0 12px 35px rgba(239, 68, 68, 0.3);
+    }
+    
+    /* Transaction List */
+    .transaction-list {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 60px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    
+    .transaction-list h2 {
+      font-size: 1.8rem;
+      color: #1f2937;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .transaction-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: 15px;
+      margin-bottom: 15px;
+      border-left: 4px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+    
+    .transaction-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .transaction-item.income {
+      border-left-color: #10b981;
+      background: rgba(16, 185, 129, 0.05);
+    }
+    
+    .transaction-item.expense {
+      border-left-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+    
+    .transaction-info {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .transaction-info h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 5px;
+    }
+    
+    .transaction-info p {
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+    
+    .transaction-amount {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    
+    .transaction-amount.income {
+      color: #10b981;
+    }
+    
+    .transaction-amount.expense {
+      color: #ef4444;
+    }
+    
+    .transaction-date {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 5px;
+    }
+    
+    /* Goals Section */
+    .goals-section {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 40px 30px;
+      margin: 50px 20px;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 20px 60px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .goals-section h2 {
+      font-size: 2rem;
+      color: #1f2937;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+    }
+    
+    .goal-card {
+      background: #f8fafc;
+      border-radius: 20px;
+      padding: 25px;
+      border: 2px solid #e5e7eb;
+      transition: all 0.3s ease;
+    }
+    
+    .goal-card:hover {
+      border-color: #2563eb;
+      transform: translateY(-5px);
+    }
+    
+    .goal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .goal-header h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+    
+    .goal-amount {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2563eb;
+    }
+    
+    .progress-container {
+      background: #e5e7eb;
+      border-radius: 10px;
+      padding: 3px;
+      margin: 15px 0;
+    }
+    
+    .progress-bar {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-radius: 8px;
+      height: 12px;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+    
+    .progress-text {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-top: 10px;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 40px;
+      margin-top: 80px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 35px 35px 0 0;
+      color: #6b7280;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+      }
+      
+      .summary-grid {
+        grid-template-columns: 1fr;
+        margin: 0 15px 40px;
+      }
+      
+      .content-grid {
+        grid-template-columns: 1fr;
+        margin: 0 15px 50px;
+      }
+      
+      .goals-section {
+        margin: 30px 15px;
+        padding: 25px 20px;
+      }
+      
+      .goals-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <i class="fas fa-wallet"></i> Paisabuddy Budget
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="features.html"><i class="fas fa-star"></i> Features</a>
+      <a href="portfolio.html"><i class="fas fa-chart-line"></i> Portfolio</a>
+      <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <div class="header">
+    <h1><i class="fas fa-chart-pie"></i> Budget Tracker</h1>
+    <p>Track expenses, set goals, and build better financial habits with smart insights!</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="summary-card income">
+      <i class="fas fa-arrow-up"></i>
+      <h3>Total Income</h3>
+      <p id="total-income">₹0</p>
+    </div>
+    <div class="summary-card expense">
+      <i class="fas fa-arrow-down"></i>
+      <h3>Total Expenses</h3>
+      <p id="total-expense">₹0</p>
+    </div>
+    <div class="summary-card">
+      <i class="fas fa-balance-scale"></i>
+      <h3>Balance</h3>
+      <p id="balance">₹0</p>
+    </div>
+    <div class="summary-card savings">
+      <i class="fas fa-piggy-bank"></i>
+      <h3>Savings Goal</h3>
+      <p id="savings-progress">0%</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-grid">
+    <!-- Add Transaction Form -->
+    <div class="form-section">
+      <h2><i class="fas fa-plus-circle"></i> Add Transaction</h2>
+      <form id="transaction-form">
+        <div class="form-group">
+          <label for="description">Description</label>
+          <input type="text" id="description" placeholder="e.g., Lunch, Salary, Shopping" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="amount">Amount (₹)</label>
+          <input type="number" id="amount" placeholder="0" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" required>
+            <option value="">Select Category</option>
+            <option value="food">🍽️ Food & Dining</option>
+            <option value="transport">🚗 Transportation</option>
+            <option value="shopping">🛍️ Shopping</option>
+            <option value="entertainment">🎬 Entertainment</option>
+            <option value="bills">📋 Bills & Utilities</option>
+            <option value="salary">💼 Salary</option>
+            <option value="business">💰 Business</option>
+            <option value="investment">📈 Investment</option>
+            <option value="other">🔧 Other</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="type">Type</label>
+          <select id="type" required>
+            <option value="">Select Type</option>
+            <option value="income">💰 Income</option>
+            <option value="expense">💸 Expense</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="btn">
+          <i class="fas fa-plus"></i> Add Transaction
+        </button>
+      </form>
+    </div>
+
+    <!-- Transaction List -->
+    <div class="transaction-list">
+      <h2><i class="fas fa-list"></i> Recent Transactions</h2>
+      <div id="transactions-container">
+        <div style="text-align: center; padding: 40px; color: #6b7280;">
+          <i class="fas fa-receipt fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+          <p>No transactions yet. Add your first transaction!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Goals Section -->
+  <div class="goals-section">
+    <h2><i class="fas fa-target"></i> Financial Goals</h2>
+    <div class="goals-grid">
+      <div class="goal-card">
+        <div class="goal-header">
+          <h3>Emergency Fund</h3>
+          <span class="goal-amount">₹50,000</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" id="emergency-progress" style="width: 0%"></div>
+        </div>
+        <div class="progress-text">₹<span id="emergency-saved">0</span> saved of ₹50,000</div>
+      </div>
+      
+      <div class="goal-card">
+        <div class="goal-header">
+          <h3>Vacation Fund</h3>
+          <span class="goal-amount">₹1,00,000</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" id="vacation-progress" style="width: 0%"></div>
+        </div>
+        <div class="progress-text">₹<span id="vacation-saved">0</span> saved of ₹1,00,000</div>
+      </div>
+      
+      <div class="goal-card">
+        <div class="goal-header">
+          <h3>Investment Goal</h3>
+          <span class="goal-amount">₹2,00,000</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" id="investment-progress" style="width: 0%"></div>
+        </div>
+        <div class="progress-text">₹<span id="investment-saved">0</span> saved of ₹2,00,000</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p><i class="fas fa-heart" style="color: #ef4444;"></i> © 2025 Paisabuddy | Empowering Young India with Financial Literacy <i class="fas fa-lightbulb" style="color: #fbbf24;"></i></p>
+  </div>
+
+  <script>
+    let transactions = JSON.parse(localStorage.getItem('paisabuddy-transactions')) || [];
+    
+    // Load data on page load
+    updateSummary();
+    renderTransactions();
+    updateGoalsProgress();
+    
+    // Form submission
+    document.getElementById('transaction-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const description = document.getElementById('description').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      const category = document.getElementById('category').value;
+      const type = document.getElementById('type').value;
+      
+      if (!description || !amount || !category || !type) {
+        alert('Please fill all fields!');
+        return;
+      }
+      
+      const transaction = {
+        id: Date.now(),
+        description,
+        amount,
+        category,
+        type,
+        date: new Date().toISOString()
+      };
+      
+      transactions.unshift(transaction);
+      localStorage.setItem('paisabuddy-transactions', JSON.stringify(transactions));
+      
+      // Reset form
+      this.reset();
+      
+      // Update UI
+      updateSummary();
+      renderTransactions();
+      updateGoalsProgress();
+      
+      // Show success message
+      showNotification(`Transaction added: ${description} (₹${amount})`, type);
+    });
+    
+    function updateSummary() {
+      const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const balance = income - expense;
+      
+      document.getElementById('total-income').textContent = `₹${income.toLocaleString('en-IN')}`;
+      document.getElementById('total-expense').textContent = `₹${expense.toLocaleString('en-IN')}`;
+      document.getElementById('balance').textContent = `₹${balance.toLocaleString('en-IN')}`;
+      
+      // Update balance color
+      const balanceEl = document.getElementById('balance');
+      balanceEl.style.color = balance >= 0 ? '#10b981' : '#ef4444';
+      
+      // Update savings progress
+      const savingsGoal = 50000; // ₹50,000 monthly savings goal
+      const savingsProgress = Math.min((Math.max(balance, 0) / savingsGoal) * 100, 100);
+      document.getElementById('savings-progress').textContent = `${Math.round(savingsProgress)}%`;
+    }
+    
+    function renderTransactions() {
+      const container = document.getElementById('transactions-container');
+      
+      if (transactions.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #6b7280;">
+            <i class="fas fa-receipt fa-3x" style="margin-bottom: 20px; opacity: 0.5;"></i>
+            <p>No transactions yet. Add your first transaction!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const recentTransactions = transactions.slice(0, 10);
+      container.innerHTML = recentTransactions.map(transaction => {
+        const date = new Date(transaction.date);
+        const formattedDate = date.toLocaleDateString('en-IN');
+        const formattedTime = date.toLocaleTimeString('en-IN', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+        
+        const categoryEmojis = {
+          food: '🍽️',
+          transport: '🚗',
+          shopping: '🛍️',
+          entertainment: '🎬',
+          bills: '📋',
+          salary: '💼',
+          business: '💰',
+          investment: '📈',
+          other: '🔧'
+        };
+        
+        return `
+          <div class="transaction-item ${transaction.type}">
+            <div class="transaction-info">
+              <h4>${categoryEmojis[transaction.category]} ${transaction.description}</h4>
+              <p>${transaction.category.charAt(0).toUpperCase() + transaction.category.slice(1)}</p>
+              <div class="transaction-date">${formattedDate} at ${formattedTime}</div>
+            </div>
+            <div class="transaction-amount ${transaction.type}">
+              ${transaction.type === 'income' ? '+' : '-'}₹${transaction.amount.toLocaleString('en-IN')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function updateGoalsProgress() {
+      const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const savings = Math.max(totalIncome - totalExpenses, 0);
+      
+      // Emergency Fund (₹50,000)
+      const emergencyGoal = 50000;
+      const emergencyProgress = Math.min((savings / emergencyGoal) * 100, 100);
+      document.getElementById('emergency-progress').style.width = `${emergencyProgress}%`;
+      document.getElementById('emergency-saved').textContent = Math.min(savings, emergencyGoal).toLocaleString('en-IN');
+      
+      // Vacation Fund (₹1,00,000) - starts after emergency fund is met
+      const vacationGoal = 100000;
+      const vacationSavings = Math.max(savings - emergencyGoal, 0);
+      const vacationProgress = Math.min((vacationSavings / vacationGoal) * 100, 100);
+      document.getElementById('vacation-progress').style.width = `${vacationProgress}%`;
+      document.getElementById('vacation-saved').textContent = Math.min(vacationSavings, vacationGoal).toLocaleString('en-IN');
+      
+      // Investment Goal (₹2,00,000) - starts after vacation fund is met
+      const investmentGoal = 200000;
+      const investmentSavings = Math.max(savings - emergencyGoal - vacationGoal, 0);
+      const investmentProgress = Math.min((investmentSavings / investmentGoal) * 100, 100);
+      document.getElementById('investment-progress').style.width = `${investmentProgress}%`;
+      document.getElementById('investment-saved').textContent = Math.min(investmentSavings, investmentGoal).toLocaleString('en-IN');
+    }
+    
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'income' ? '#10b981' : '#ef4444'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        z-index: 1000;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+      }, 100);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

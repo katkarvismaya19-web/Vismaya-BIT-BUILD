@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fraud Challenges - Paisabuddy</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f7e6e4 0%, #f0d9d6 50%, #ead3cf 100%);
+      min-height: 100vh;
+      color: #4a4a4a;
+      line-height: 1.6;
+    }
+    
+    /* Navigation */
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      margin: 20px;
+      padding: 15px 30px;
+      box-shadow: 0 10px 40px rgba(206, 156, 148, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .navbar-brand {
+      color: #2563eb !important;
+      font-weight: 700;
+      font-size: 1.4rem;
+      text-decoration: none;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 30px;
+    }
+    
+    .nav-links a {
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 15px;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-links a:hover {
+      color: #2563eb;
+      background: rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 30px 40px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 35px;
+      margin: 0 20px 40px;
+      box-shadow: 0 20px 60px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .header h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 15px;
+      letter-spacing: -0.5px;
+    }
+    
+    .header p {
+      font-size: 1.25rem;
+      color: #6b7280;
+      margin-bottom: 30px;
+      font-weight: 400;
+    }
+    
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 25px;
+      margin: 0 20px 50px;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 25px;
+      padding: 25px 20px;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 25px 70px rgba(206, 156, 148, 0.15);
+    }
+    
+    .stat-card i {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+    
+    .stat-card.correct i { color: #10b981; }
+    .stat-card.incorrect i { color: #ef4444; }
+    .stat-card.streak i { color: #fbbf24; }
+    .stat-card.level i { color: #8b5cf6; }
+    
+    .stat-card h3 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 10px;
+    }
+    
+    .stat-card p {
+      color: #6b7280;
+      font-weight: 500;
+    }
+    
+    /* Challenge Section */
+    .challenge-section {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 40px 30px;
+      margin: 50px 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 20px 60px rgba(206, 156, 148, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .challenge-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .challenge-header h2 {
+      font-size: 2rem;
+      color: #1f2937;
+      margin-bottom: 15px;
+    }
+    
+    .challenge-level {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    
+    /* Scenario Card */
+    .scenario-card {
+      background: #f8fafc;
+      border: 2px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .scenario-card.phishing {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.05);
+    }
+    
+    .scenario-card.safe {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.05);
+    }
+    
+    .scenario-type {
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      background: #ef4444;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .scenario-card.safe .scenario-type {
+      background: #10b981;
+    }
+    
+    .scenario-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .scenario-content {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 20px 0;
+      border-left: 4px solid #e5e7eb;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .scenario-card.phishing .scenario-content {
+      border-left-color: #ef4444;
+    }
+    
+    .scenario-card.safe .scenario-content {
+      border-left-color: #10b981;
+    }
+    
+    .email-header {
+      background: #f1f5f9;
+      padding: 15px 20px;
+      border-radius: 10px 10px 0 0;
+      border-bottom: 1px solid #e2e8f0;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .email-body {
+      padding: 20px;
+      line-height: 1.8;
+    }
+    
+    .suspicious-text {
+      background: rgba(239, 68, 68, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      color: #dc2626;
+    }
+    
+    /* Question Section */
+    .question-section {
+      margin: 30px 0;
+    }
+    
+    .question-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 20px;
+    }
+    
+    .options-grid {
+      display: grid;
+      gap: 15px;
+    }
+    
+    .option-button {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 15px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      text-align: left;
+      font-size: 1rem;
+    }
+    
+    .option-button:hover {
+      border-color: #2563eb;
+      background: rgba(37, 99, 235, 0.05);
+      transform: translateX(5px);
+    }
+    
+    .option-button.selected {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+    
+    .option-button.correct {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    
+    .option-button.incorrect {
+      background: #ef4444;
+      color: white;
+      border-color: #ef4444;
+    }
+    
+    /* Red Flags */
+    .red-flags {
+      background: rgba(239, 68, 68, 0.05);
+      border: 2px solid #fecaca;
+      border-radius: 15px;
+      padding: 25px;
+      margin: 25px 0;
+    }
+    
+    .red-flags h4 {
+      color: #dc2626;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .red-flags ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .red-flags li {
+      padding: 8px 0;
+      color: #7f1d1d;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .red-flags li::before {
+      content: '⚠️';
+      font-size: 1.2rem;
+    }
+    
+    /* Buttons */
+    .btn {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(37, 99, 235, 0.3);
+    }
+    
+    .btn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn.danger {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.2);
+    }
+    
+    .btn.danger:hover {
+      box-shadow: 0 12px 35px rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn.success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);
+    }
+    
+    .btn.success:hover {
+      box-shadow: 0 12px 35px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 40px;
+      margin-top: 80px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 35px 35px 0 0;
+      color: #6b7280;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .header h1 {
+        font-size: 2.5rem;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        margin: 0 15px 40px;
+      }
+      
+      .challenge-section {
+        margin: 30px 15px;
+        padding: 25px 20px;
+      }
+      
+      .scenario-card {
+        padding: 20px;
+      }
+      
+      .scenario-content {
+        padding: 20px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <i class="fas fa-shield-alt"></i> Paisabuddy Security
+    </a>
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="features.html"><i class="fas fa-star"></i> Features</a>
+      <a href="portfolio.html"><i class="fas fa-chart-line"></i> Portfolio</a>
+      <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <div class="header">
+    <h1><i class="fas fa-user-secret"></i> Fraud Challenges</h1>
+    <p>Learn to spot scams, phishing attacks, and financial fraud through interactive challenges!</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card correct">
+      <i class="fas fa-check-circle"></i>
+      <h3 id="correct-answers">0</h3>
+      <p>Correct Detections</p>
+    </div>
+    <div class="stat-card incorrect">
+      <i class="fas fa-times-circle"></i>
+      <h3 id="incorrect-answers">0</h3>
+      <p>Missed Scams</p>
+    </div>
+    <div class="stat-card streak">
+      <i class="fas fa-fire"></i>
+      <h3 id="streak-count">0</h3>
+      <p>Current Streak</p>
+    </div>
+    <div class="stat-card level">
+      <i class="fas fa-shield-alt"></i>
+      <h3 id="security-level">Beginner</h3>
+      <p>Security Level</p>
+    </div>
+  </div>
+
+  <!-- Challenge Section -->
+  <div class="challenge-section">
+    <div class="challenge-header">
+      <h2><i class="fas fa-crosshairs"></i> Fraud Detection Challenge</h2>
+      <div class="challenge-level">
+        <i class="fas fa-layer-group"></i>
+        <span>Level 1: Email Phishing</span>
+      </div>
+      <p>Examine the following scenario and determine if it's legitimate or a scam.</p>
+    </div>
+
+    <div id="challenge-container">
+      <div class="scenario-card phishing" id="scenario-1">
+        <div class="scenario-type">SUSPICIOUS</div>
+        <div class="scenario-title">
+          <i class="fas fa-envelope"></i>
+          Bank Account Verification Required
+        </div>
+        
+        <div class="scenario-content">
+          <div class="email-header">
+            <strong>From:</strong> security-alert@bank-verification.com<br>
+            <strong>Subject:</strong> URGENT: Your Account Will Be Suspended
+          </div>
+          <div class="email-body">
+            Dear Valued Customer,<br><br>
+            
+            We have detected <span class="suspicious-text">suspicious activity</span> on your account. 
+            Your account will be <span class="suspicious-text">suspended within 24 hours</span> unless you verify your information immediately.<br><br>
+            
+            <strong>Click here to verify your account now:</strong><br>
+            <a href="#" style="color: #2563eb;">www.bank-secure-login.verify.com/urgent-verification</a><br><br>
+            
+            You will need to provide:<br>
+            • Your username and password<br>
+            • Credit card details<br>
+            • Social security number<br><br>
+            
+            <span style="color: #ef4444; font-weight: bold;">Act now to avoid account closure!</span><br><br>
+            
+            Bank Security Team
+          </div>
+        </div>
+
+        <div class="question-section">
+          <div class="question-text">
+            Is this email legitimate or a phishing scam?
+          </div>
+          <div class="options-grid">
+            <button class="option-button" data-answer="wrong">
+              <i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i>
+              Legitimate - I should verify my account immediately
+            </button>
+            <button class="option-button" data-answer="correct">
+              <i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 10px;"></i>
+              Phishing scam - This has multiple red flags
+            </button>
+            <button class="option-button" data-answer="wrong">
+              <i class="fas fa-question-circle" style="color: #6b7280; margin-right: 10px;"></i>
+              Unsure - I would call the bank first
+            </button>
+          </div>
+        </div>
+
+        <div class="red-flags" id="red-flags-1" style="display: none;">
+          <h4><i class="fas fa-flag"></i> Red Flags Identified:</h4>
+          <ul>
+            <li>Suspicious sender domain (not official bank domain)</li>
+            <li>Creates false urgency ("suspended within 24 hours")</li>
+            <li>Requests sensitive information (passwords, SSN)</li>
+            <li>Suspicious URL that doesn't match bank's official website</li>
+            <li>Generic greeting ("Dear Valued Customer")</li>
+            <li>Threatening language about account closure</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="scenario-card safe" id="scenario-2" style="display: none;">
+        <div class="scenario-type">LEGITIMATE</div>
+        <div class="scenario-title">
+          <i class="fas fa-mobile-alt"></i>
+          SMS from Bank
+        </div>
+        
+        <div class="scenario-content">
+          <div class="email-header">
+            <strong>From:</strong> HDFC Bank (HD-HDFCBK)<br>
+            <strong>Message:</strong> SMS Alert
+          </div>
+          <div class="email-body">
+            Dear Customer,<br><br>
+            
+            Your HDFC Bank account ending in 1234 has been credited with Rs. 50,000 on 21-Jan-2025 at 14:30.<br><br>
+            
+            Available balance: Rs. 1,25,000<br><br>
+            
+            If you did not initiate this transaction, please contact customer care at 1800-425-4332 immediately.<br><br>
+            
+            - HDFC Bank
+          </div>
+        </div>
+
+        <div class="question-section">
+          <div class="question-text">
+            Is this SMS from your bank legitimate or suspicious?
+          </div>
+          <div class="options-grid">
+            <button class="option-button" data-answer="correct">
+              <i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i>
+              Legitimate - This appears to be a genuine bank alert
+            </button>
+            <button class="option-button" data-answer="wrong">
+              <i class="fas fa-times-circle" style="color: #ef4444; margin-right: 10px;"></i>
+              Scam - Banks never send SMS alerts
+            </button>
+            <button class="option-button" data-answer="wrong">
+              <i class="fas fa-exclamation-triangle" style="color: #ef4444; margin-right: 10px;"></i>
+              Suspicious - The amount seems too high
+            </button>
+          </div>
+        </div>
+
+        <div class="red-flags" id="red-flags-2" style="display: none; border-color: #10b981; background: rgba(16, 185, 129, 0.05);">
+          <h4 style="color: #059669;"><i class="fas fa-shield-check"></i> Why This is Legitimate:</h4>
+          <ul>
+            <li style="color: #065f46;">Official bank sender ID (HD-HDFCBK)</li>
+            <li style="color: #065f46;">Specific account details (last 4 digits)</li>
+            <li style="color: #065f46;">Clear transaction information with timestamp</li>
+            <li style="color: #065f46;">Provides official customer care number</li>
+            <li style="color: #065f46;">No links or requests for personal information</li>
+            <li style="color: #065f46;">Professional tone and proper bank branding</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="scenario-card phishing" id="scenario-3" style="display: none;">
+        <div class="scenario-type">SCAM</div>
+        <div class="scenario-title">
+          <i class="fas fa-phone"></i>
+          Phone Call Scam
+        </div>
+        
+        <div class="scenario-content">
+          <div class="email-header">
+            <strong>Caller:</strong> "Bank Customer Service"<br>
+            <strong>Caller ID:</strong> +91-XXXXXXXXXX (Unknown number)
+          </div>
+          <div class="email-body">
+            "Hello, this is calling from your bank's fraud prevention department. We've detected <span class="suspicious-text">unauthorized transactions</span> on your account worth Rs. 75,000.<br><br>
+            
+            To secure your account, I need to verify some information:<br>
+            • What's your ATM PIN?<br>
+            • Can you tell me the CVV on your debit card?<br>
+            • What's your internet banking password?<br><br>
+            
+            <span class="suspicious-text">Sir, this is very urgent. Your money will be lost if you don't act now!</span><br><br>
+            
+            I can also help you transfer your money to a <span class="suspicious-text">'safe account'</span> temporarily while we investigate."
+          </div>
+        </div>
+
+        <div class="question-section">
+          <div class="question-text">
+            How should you respond to this phone call?
+          </div>
+          <div class="options-grid">
+            <button class="option-button" data-answer="wrong">
+              <i class="fas fa-phone" style="color: #2563eb; margin-right: 10px;"></i>
+              Provide the information - they're trying to help
+            </button>
+            <button class="option-button" data-answer="correct">
+              <i class="fas fa-phone-slash" style="color: #ef4444; margin-right: 10px;"></i>
+              Hang up immediately - this is definitely a scam
+            </button>
+            <button class="option-button" data-answer="wrong">
+              <i class="fas fa-question-circle" style="color: #6b7280; margin-right: 10px;"></i>
+              Transfer money to the "safe account" first
+            </button>
+          </div>
+        </div>
+
+        <div class="red-flags" id="red-flags-3" style="display: none;">
+          <h4><i class="fas fa-flag"></i> Major Red Flags:</h4>
+          <ul>
+            <li>Bank NEVER asks for PIN, CVV, or passwords over phone</li>
+            <li>Creates panic with "urgent" and "money will be lost"</li>
+            <li>Asks you to transfer money to "safe account"</li>
+            <li>Unknown caller ID (banks use official numbers)</li>
+            <li>Requests immediate action without proper verification</li>
+            <li>No legitimate bank offers "safe account" transfers</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+      <button class="btn" id="submit-btn" onclick="submitAnswer()" disabled>
+        <i class="fas fa-paper-plane"></i> Submit Answer
+      </button>
+      <button class="btn success" id="next-btn" onclick="nextChallenge()" style="display: none;">
+        <i class="fas fa-arrow-right"></i> Next Challenge
+      </button>
+      <button class="btn" id="restart-btn" onclick="restartChallenges()" style="display: none;">
+        <i class="fas fa-redo"></i> Take More Challenges
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p><i class="fas fa-heart" style="color: #ef4444;"></i> © 2025 Paisabuddy | Empowering Young India with Financial Literacy <i class="fas fa-lightbulb" style="color: #fbbf24;"></i></p>
+  </div>
+
+  <script>
+    let currentScenario = 1;
+    let totalScenarios = 3;
+    let selectedAnswer = null;
+    let stats = JSON.parse(localStorage.getItem('paisabuddy-fraud-stats')) || {
+      correct: 0,
+      incorrect: 0,
+      streak: 0,
+      level: 'Beginner'
+    };
+
+    // Load stats
+    updateStats();
+
+    // Handle option selection
+    document.querySelectorAll('.option-button').forEach(button => {
+      button.addEventListener('click', function() {
+        if (this.classList.contains('correct') || this.classList.contains('incorrect')) return;
+        
+        // Remove previous selection
+        this.parentElement.querySelectorAll('.option-button').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        
+        // Select current option
+        this.classList.add('selected');
+        selectedAnswer = this.getAttribute('data-answer');
+        
+        // Enable submit button
+        document.getElementById('submit-btn').disabled = false;
+      });
+    });
+
+    function submitAnswer() {
+      if (!selectedAnswer) return;
+
+      const currentScenarioEl = document.getElementById(`scenario-${currentScenario}`);
+      const redFlagsEl = document.getElementById(`red-flags-${currentScenario}`);
+      
+      // Show correct/incorrect answers
+      currentScenarioEl.querySelectorAll('.option-button').forEach(option => {
+        if (option.getAttribute('data-answer') === 'correct') {
+          option.classList.add('correct');
+        } else if (option.classList.contains('selected') && option.getAttribute('data-answer') === 'wrong') {
+          option.classList.add('incorrect');
+        }
+      });
+
+      // Update stats
+      if (selectedAnswer === 'correct') {
+        stats.correct++;
+        stats.streak++;
+        showFeedback("🎉 Excellent! You correctly identified the threat!", 'success');
+      } else {
+        stats.incorrect++;
+        stats.streak = 0;
+        showFeedback("⚠️ Not quite right. Review the red flags below!", 'error');
+      }
+
+      // Show explanation
+      redFlagsEl.style.display = 'block';
+
+      // Update security level
+      updateSecurityLevel();
+      updateStats();
+      saveStats();
+
+      // Update buttons
+      document.getElementById('submit-btn').style.display = 'none';
+      if (currentScenario < totalScenarios) {
+        document.getElementById('next-btn').style.display = 'inline-flex';
+      } else {
+        document.getElementById('restart-btn').style.display = 'inline-flex';
+        showFeedback("🏆 Challenge completed! You've finished all scenarios.", 'success');
+      }
+    }
+
+    function nextChallenge() {
+      // Hide current scenario
+      document.getElementById(`scenario-${currentScenario}`).style.display = 'none';
+      
+      // Show next scenario
+      currentScenario++;
+      document.getElementById(`scenario-${currentScenario}`).style.display = 'block';
+      
+      // Reset state
+      selectedAnswer = null;
+      document.getElementById('submit-btn').style.display = 'inline-flex';
+      document.getElementById('submit-btn').disabled = true;
+      document.getElementById('next-btn').style.display = 'none';
+      
+      // Update challenge level
+      const levelText = currentScenario === 2 ? 'Level 2: SMS Verification' : 'Level 3: Phone Scams';
+      document.querySelector('.challenge-level span').textContent = levelText;
+    }
+
+    function restartChallenges() {
+      // Reset to first scenario
+      for (let i = 1; i <= totalScenarios; i++) {
+        document.getElementById(`scenario-${i}`).style.display = i === 1 ? 'block' : 'none';
+        document.getElementById(`red-flags-${i}`).style.display = 'none';
+        
+        // Reset option buttons
+        document.querySelectorAll(`#scenario-${i} .option-button`).forEach(btn => {
+          btn.classList.remove('selected', 'correct', 'incorrect');
+        });
+      }
+      
+      currentScenario = 1;
+      selectedAnswer = null;
+      
+      // Reset buttons
+      document.getElementById('submit-btn').style.display = 'inline-flex';
+      document.getElementById('submit-btn').disabled = true;
+      document.getElementById('next-btn').style.display = 'none';
+      document.getElementById('restart-btn').style.display = 'none';
+      
+      // Reset challenge level
+      document.querySelector('.challenge-level span').textContent = 'Level 1: Email Phishing';
+    }
+
+    function updateStats() {
+      document.getElementById('correct-answers').textContent = stats.correct;
+      document.getElementById('incorrect-answers').textContent = stats.incorrect;
+      document.getElementById('streak-count').textContent = stats.streak;
+      document.getElementById('security-level').textContent = stats.level;
+    }
+
+    function updateSecurityLevel() {
+      const total = stats.correct + stats.incorrect;
+      const accuracy = total > 0 ? (stats.correct / total) * 100 : 0;
+      
+      if (stats.correct >= 15 && accuracy >= 90) {
+        stats.level = 'Expert';
+      } else if (stats.correct >= 10 && accuracy >= 80) {
+        stats.level = 'Advanced';
+      } else if (stats.correct >= 5 && accuracy >= 70) {
+        stats.level = 'Intermediate';
+      } else {
+        stats.level = 'Beginner';
+      }
+    }
+
+    function saveStats() {
+      localStorage.setItem('paisabuddy-fraud-stats', JSON.stringify(stats));
+    }
+
+    function showFeedback(message, type) {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : '#ef4444'};
+        color: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        z-index: 1000;
+        transform: translateX(400px);
+        transition: transform 0.3s ease;
+        max-width: 300px;
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+      }, 100);
+      
+      // Remove after 4 seconds
+      setTimeout(() => {
+        notification.style.transform = 'translateX(400px)';
+        setTimeout(() => {
+          if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
