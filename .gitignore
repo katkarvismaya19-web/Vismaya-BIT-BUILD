@@ -121,3 +121,7 @@ config.prod.js
 *backup*
 *old*
 *temp*
+__pycache__/ 
+*.pyc 
+__pycache__/ 
+*.pyc 
