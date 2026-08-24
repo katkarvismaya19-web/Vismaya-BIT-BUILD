@@ -132,13 +132,24 @@ class PaisabuddyDB:
         finally:
             cursor.close()
     
+    def hash_password(self, password):
+        """Hash password using SHA-256 (simple hashing for demo)"""
+        return hashlib.sha256(password.encode()).hexdigest()
+    
     def get_or_create_user(self, username="demo_user", email="demo@paisabuddy.com", name="Demo User"):
         """Get existing user or create a demo user for games"""
         cursor = self.connection.cursor(dictionary=True)
         
         try:
-            # Try to find existing user
+            # Try to find existing user by username first
             cursor.execute("SELECT * FROM Users WHERE username = %s", (username,))
+            user = cursor.fetchone()
+            
+            if user:
+                return user
+            
+            # Try to find by email if username not found
+            cursor.execute("SELECT * FROM Users WHERE email = %s", (email,))
             user = cursor.fetchone()
             
             if user:
@@ -146,14 +157,25 @@ class PaisabuddyDB:
             
             # Create demo user if not exists
             password_hash = self.hash_password("demo123")
-            cursor.execute("""
-                INSERT INTO Users (name, username, email, password_hash, balance, total_score) 
-                VALUES (%s, %s, %s, %s, 100000.00, 0)
-            """, (name, username, email, password_hash))
             
-            user_id = cursor.lastrowid
-            cursor.execute("SELECT * FROM Users WHERE id = %s", (user_id,))
-            return cursor.fetchone()
+            try:
+                cursor.execute("""
+                    INSERT INTO Users (name, username, email, password_hash, balance, total_score) 
+                    VALUES (%s, %s, %s, %s, 100000.00, 0)
+                """, (name, username, email, password_hash))
+                
+                user_id = cursor.lastrowid
+                cursor.execute("SELECT * FROM Users WHERE id = %s", (user_id,))
+                return cursor.fetchone()
+                
+            except Error as insert_error:
+                if insert_error.errno == 1062:  # Duplicate entry
+                    print(f"⚠️ User already exists, fetching existing user...")
+                    # Try once more to get existing user
+                    cursor.execute("SELECT * FROM Users WHERE username = %s OR email = %s", (username, email))
+                    return cursor.fetchone()
+                else:
+                    raise insert_error
             
         except Error as e:
             print(f"❌ Error managing user: {e}")
@@ -405,10 +427,6 @@ class PaisabuddyDB:
         finally:
             cursor.close()
     
-    @staticmethod
-    def hash_password(password):
-        """Hash password for storage"""
-        return hashlib.sha256(password.encode()).hexdigest()
 
 # Global database instance
 db = PaisabuddyDB()

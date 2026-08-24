@@ -1,0 +1,14 @@
+{
+  "game_settings": {
+    "music_volume": 0.7,
+    "sound_effects": true,
+    "fullscreen": false,
+    "difficulty": "medium",
+    "auto_save": true
+  },
+  "player_preferences": {
+    "player_name": "Player",
+    "tutorial_completed": false,
+    "tips_enabled": true
+  }
+}
